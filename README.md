@@ -35,18 +35,18 @@ This is a simple single-paged web forum application built with Go, javascript, S
 # How to use
 1. **Clone the repository:**
    ```bash
-   git clone https://learn.reboot01.com/git/musabt/forum.git
-   cd forum
+   git clone https://learn.reboot01.com/git/musabt/real-time-forum.git
+   cd RTF
    ```
 2. **Build the Docker image:**
     ```bash
-    docker build -t forum-app .
+    docker build -t RTF-app .
     ```
 3. **Run the application in a Docker container:**
     ```bash
-    docker run -p 443:443 forum-app
+    docker run -p 443:443 RTF-app
     ```
-4. **Access the forum:**
+4. **Access the RTF:**
     Open your browser and navigate to https://localhost
 
 # Authors

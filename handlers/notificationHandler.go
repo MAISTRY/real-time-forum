@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"forum/DB"
+	"RTF/DB"
 	"net/http"
 )
 

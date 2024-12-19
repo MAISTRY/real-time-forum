@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	// hndls "forum/handlers"
-	"forum/utils"
+	// hndls "RTF/handlers"
+	"RTF/utils"
 	"io"
 	"net/http"
 	"net/url"

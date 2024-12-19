@@ -1,8 +1,8 @@
 package main
 
 import (
-	"forum/DB"
-	"forum/handlers"
+	"RTF/DB"
+	"RTF/handlers"
 	"log"
 	"net/http"
 

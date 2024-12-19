@@ -4,7 +4,7 @@ FROM golang:1.23.3
 # set the directory in the container
 WORKDIR /app
 
-LABEL authors="mmahmooda, musabt, malmannai, alimarhoon"
+LABEL authors="mmahmooda, musabt"
 LABEL description="MEOW container for forum project"
 
 COPY go.mod .

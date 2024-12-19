@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"forum/auth"
-	mdlware "forum/middleware"
+	"RTF/auth"
+	mdlware "RTF/middleware"
 	"net/http"
 )
 

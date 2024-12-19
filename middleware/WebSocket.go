@@ -3,7 +3,7 @@ package middleware
 import (
 	"database/sql"
 	"fmt"
-	"forum/DB"
+	"RTF/DB"
 	"log"
 	"net/http"
 	"strconv"

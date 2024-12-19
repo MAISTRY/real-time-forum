@@ -3,7 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	"forum/DB"
+	"RTF/DB"
 	"log"
 	"net/http"
 	"strconv"

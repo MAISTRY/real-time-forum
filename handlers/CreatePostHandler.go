@@ -3,7 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"forum/DB"
+	"RTF/DB"
 	"io"
 	"net/http"
 	"os"

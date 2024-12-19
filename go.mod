@@ -1,4 +1,4 @@
-module forum
+module RTF
 
 go 1.23
 
