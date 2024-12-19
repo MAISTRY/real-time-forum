@@ -4,6 +4,16 @@ const sidebar = document.getElementById('sidebar');
 const mainContent = document.querySelector('.main-content');
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    if (window["WebSocket"]) {
+        // Connect to websocket
+        conn = new WebSocket("wss://" + document.location.host + "/ws");
+        console.log("supports websockets");
+    } else {
+        alert("Not supporting websockets");
+    }
+
+
     const menu = document.querySelector(".menu");
     const menuItems = document.querySelectorAll('.menu-item');
 

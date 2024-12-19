@@ -12,6 +12,7 @@ func Routes() http.Handler {
 
 	router.HandleFunc("/", HomePage)
 
+	router.HandleFunc("/ws", mdlware.WebSocketHandler)
 	router.HandleFunc("/auth/status", CheckAuthHandler)
 
 	router.HandleFunc("/Data-userLogin", LoginHandler)
