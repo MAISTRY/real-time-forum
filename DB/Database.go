@@ -90,19 +90,17 @@ const (
 		FOREIGN KEY (CommentID) REFERENCES Comment(CommentID) ON DELETE CASCADE,
 		FOREIGN KEY (UserID) REFERENCES User(UserID) ON DELETE CASCADE
 	);`
-	// ! we change this way of storing the images
-	// CreatePostImageTableQuery = `CREATE TABLE IF NOT EXISTS PostImage(
-	// 	ImageID INTEGER PRIMARY KEY AUTOINCREMENT,
-	// 	PostID INTEGER NOT NULL,
-	// 	image_data BLOB NOT NULL,
-	// 	image_filename TEXT NOT NULL,
-	// 	image_mimetype TEXT NOT NULL,
-	// 	image_width INTEGER NOT NULL CHECK(image_width > 0 AND image_width <= 8192),
-	// 	image_height INTEGER NOT NULL CHECK(image_height > 0 AND image_height <= 8192),
-	// 	image_size INTEGER NOT NULL CHECK(image_size > 0 AND image_size <= 20971520),
-	// 	FOREIGN KEY (PostID) REFERENCES Post(PostID) ON DELETE CASCADE
-	// );`
-	// ! need to be checked. @mmahmooda
+	// * Messages Table
+	CreateMessagesTableQuery = `CREATE TABLE IF NOT EXISTS Messages(
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+    	sender_id INTEGER NOT NULL,
+		receiver_id INTEGER NOT NULL,
+		message TEXT NOT NULL,
+		timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+		is_read BOOLEAN DEFAULT FALSE,
+		FOREIGN KEY (sender_id) REFERENCES User (UserID) ON DELETE CASCADE,
+		FOREIGN KEY (receiver_id) REFERENCES User (UserID) ON DELETE CASCADE
+	);`
 	// * added UserToNotify (to know who's the user to get the notification)
 	CreateNotificationTableQuery = `CREATE TABLE IF NOT EXISTS Notification (
 		NotificationID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -188,9 +186,9 @@ func CreateTables(db *sql.DB) {
 	if _, err := db.Exec(CreateCommentDislikeTableQuery); err != nil {
 		log.Fatalf("error creating the comment_dislike table: %v", err)
 	}
-	// if _, err := db.Exec(CreatePostImageTableQuery); err != nil {
-	// 	log.Fatalf("error creating the post_image table: %v", err)
-	// }
+	if _, err := db.Exec(CreateMessagesTableQuery); err != nil {
+		log.Fatalf("error creating the Messages table: %v", err)
+	}
 	if _, err := db.Exec(CreateNotificationTableQuery); err != nil {
 		log.Fatalf("error creating the Notification table: %v", err)
 	}

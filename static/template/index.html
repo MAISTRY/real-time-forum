@@ -10,19 +10,21 @@
     <link rel="stylesheet" href="../styles/Comments.css">
     <link rel="stylesheet" href="../styles/Posts.css">
     <link rel="stylesheet" href="../styles/ErrorPage.css">
+    <link rel="stylesheet" href="../styles/Messages.css">
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!--* https://fonts.google.com/icons?icon.size=24&icon.color=%23e8eaed -->
-
+    
     <script src="https://unpkg.com/htmx.org@1.9.3"></script>
+    <link rel="icon" type="image" href="../images/glass2.png">
 
-    <title>🐧Penguinity</title>
+    <title>Penguinity</title>
 </head>
-<body>
+<body> 
     <!-- * SIDE BAR -->
     <div class="sidebar" id="sidebar">
         <div class="menu-name">
-            <img src="../images/glass.avif" alt="Avatar" class="logo">
+            <img src="../images/glass.png" alt="Avatar" class="logo">
             <span>Penguinity</span>
         </div> 
         <div class="menu">
@@ -41,17 +43,22 @@
                 <span>creat post</span>
             </a>
             
+            <a class="text-item menu-item privilage disabled-link" data-page="Messages">
+                <i class="material-icons">inbox</i>
+                <span>Messages</span>
+            </a>
+
             <a class="text-item menu-item privilage disabled-link" data-has-Submenu="true" data-page="Profile" title="Profile">
                 <i class="material-icons">person</i>
                 <span>Profile</span>
+                <i class="material-icons sub-menu">ss arrow_drop_down</i>
             </a>
-            <!-- <i class="material-icons">ss arrow_drop_down</i> -->
-           <!-- <div class="sub-menu">
+           <div class="sub-menu">
                 <div class="sub-menu-item" data-page="Created">created posts</div>
                 <div class="sub-menu-item" data-page="Liked">liked posts</div>
                 <div class="sub-menu-item" data-page="Disliked">disliked posts</div>
-                 <div class="sub-menu-item">comments</div>
-            </div> -->
+                <!-- <div class="sub-menu-item">comments</div> -->
+            </div>
 
         </div>
         <!-- * END SIDE BAR -->
@@ -72,6 +79,74 @@
                 <span>Hide menu</span>
             </a>
 
+        </div>
+    </div>
+    <div class="RightSidebar" id="RightSidebar">
+        <div class="users-sidebar">
+            <div class="users-header">
+                <h2>All Users</h2>
+            </div>
+            <div>
+                <div class="user-item">
+                    <div class="chat-info">
+                        <div class="chat-name">John Doe</div>
+                        <div class="last-message">Hey, how are you?</div>
+                    </div>
+                    <div class="status-icon status-online"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Jane Smith</div>
+                    <div class="status-icon status-online"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Mike Johnson</div>
+                    <div class="status-icon status-offline"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Amy Smith</div>
+                    <div class="status-icon status-online"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Robert Brown</div>
+                    <div class="status-icon status-offline"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Emma Wilson</div>
+                    <div class="status-icon status-online"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Emma Wilson</div>
+                    <div class="status-icon status-online"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Emma Wilson</div>
+                    <div class="status-icon status-online"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Emma Wilson</div>
+                    <div class="status-icon status-online"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Emma Wilson</div>
+                    <div class="status-icon status-online"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Emma Wilson</div>
+                    <div class="status-icon status-online"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Emma Wilson</div>
+                    <div class="status-icon status-online"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Emma Wilson</div>
+                    <div class="status-icon status-online"></div>
+                </div>
+                <div class="user-item">
+                    <div class="chat-name">Emma Wilson</div>
+                    <div class="status-icon status-online"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -261,13 +336,50 @@
             </div>
         </div>
 
+        <div id="Messages" class="ChatDiv deactive">
+               
+        
+                <!-- Main Chat Area -->
+                <div class="chat-area">
+                    <div class="chat-header">
+                        <div class="avatar"></div>
+                        <div class="chat-name">John Doe</div>
+                    </div>
+                    <div class="messages">
+                        <div class="message received">Hey! How are you doing?</div>
+                        <div class="message sent">I'm doing great! Just finished my project.</div>
+                        <div class="message received">That's awesome! Would love to see it.</div>
+                        <div class="message sent">Sure! I'll send you the details tomorrow.</div>
+                        <div class="message received">Hey! How are you doing?</div>
+                        <div class="message sent">I'm doing great! Just finished my project.</div>
+                        <div class="message received">That's awesome! Would love to see it.</div>
+                        <div class="message sent">Sure! I'll send you the details tomorrow.</div>
+                        <div class="message received">Hey! How are you doing?</div>
+                        <div class="message sent">I'm doing great! Just finished my project.</div>
+                        <div class="message received">That's awesome! Would love to see it.</div>
+                        <div class="message sent">Sure! I'll send you the details tomorrow.</div>
+                    </div>
+                    <div class="input-area">
+                        <input type="text" class="message-input" placeholder="Type a message...">
+                        <button class="send-button">Send</button>
+                    </div>
+                </div>
+            
+        </div>
+
         <div id="Profile" class="deactive">
+        </div>
+
+        <div id="Created" class="deactive">
             <h1 class="pageTitle">Created</h1> 
-            <div id="Created"></div>
+        </div>
+
+        <div id="Liked" class="deactive">
             <h1 class="pageTitle">Liked</h1> 
-            <div id="Liked"></div>
+        </div>
+
+        <div id="Disliked" class="deactive">
             <h1 class="pageTitle">Disliked</h1> 
-            <div id="Disliked"></div>
         </div>
 
         <div id="Error" class="deactive">

@@ -1,5 +1,7 @@
 package DB
 
+//! still in development
+
 import (
 	"database/sql"
 	"log"

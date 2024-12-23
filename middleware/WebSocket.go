@@ -1,9 +1,10 @@
 package middleware
 
 import (
+	"RTF/DB"
+	hand "RTF/handlers"
 	"database/sql"
 	"fmt"
-	"RTF/DB"
 	"log"
 	"net/http"
 	"strconv"
@@ -59,12 +60,18 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Client ID:%s connected\n", userID)
 
 	for {
-		_, message, err := conn.ReadMessage()
+		msgType, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Printf("Error reading message: %v\n", err)
 			return
 		}
 		fmt.Printf("Received from %s: %s\n", userID, message)
+
+		err = hand.MessageHandler(userID, msgType, message)
+		if err != nil {
+			log.Printf("Error handling message: %v\n", err)
+			return
+		}
 	}
 
 	defer conn.Close()

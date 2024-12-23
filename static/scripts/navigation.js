@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 logoutButtons.forEach(section => section.classList.remove('deactive'));
 
                 privilage.forEach(section => section.classList.remove('disabled-link'));
-                if (!validPages.includes('Createpost','Profile','Created','Liked','Disliked')) {
-                    validPages.push('Createpost','Profile','Created','Liked','Disliked');
+                if (!validPages.includes('Createpost','Profile','Created','Liked','Disliked','Messages')) {
+                    validPages.push('Createpost','Profile','Created','Liked','Disliked','Messages');
                 }
                 
             } else if (data.authenticated && data.privilege === 2) {
@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 loginButtons.forEach(section => section.classList.remove('deactive'));
                 logoutButtons.forEach(section => section.classList.add('deactive'));
+                
                 privilage.forEach(section => section.classList.add('disabled-link'));
                 if (!validPages.includes('Login','Register')) {
                     validPages.push('Login','Register');

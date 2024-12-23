@@ -35,9 +35,9 @@ function loadProfileData() {
         const dislikedPostsContainer = document.getElementById('Disliked');
         
         // Clear the containers first
-        createdPostsContainer.innerHTML = '';
-        likedPostsContainer.innerHTML = '';
-        dislikedPostsContainer.innerHTML = '';
+        createdPostsContainer.innerHTML = '<h1 class="pageTitle">Created</h1>';
+        likedPostsContainer.innerHTML = '<h1 class="pageTitle">Liked</h1>';
+        dislikedPostsContainer.innerHTML = '<h1 class="pageTitle">Disliked</h1>';
         
         // Loop through the profile data for Created, Liked, and Disliked posts
         ['CreatedPosts', 'LikedPosts', 'DislikedPosts'].forEach(type => {

@@ -24,6 +24,59 @@ body {
     /* transition: 0.8s; */
 }
 
+.users-sidebar {
+    width: 40vh;
+    height: 100vh;
+    background: white;
+    padding: 1rem;
+    box-shadow: 0.125rem 0 0.3125rem rgba(0,0,0,0.1);
+    position: fixed;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    /* transition: 0.8s; */
+}
+
+.users-header {
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.users-header h2 {
+    color: #1a1a1a;
+    font-size: 20px;
+}
+
+#users-list {
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.user-item {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.user-item:hover {
+    background-color: #f5f5f5;
+}
+
+.status-icon {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: auto;
+    background-color: #9ca3af;
+
+}
+
+.status-online {
+    background-color: #22c55e;
+}
+
 .sidebar.collapsed { 
     width: 5rem;
 }
@@ -114,6 +167,7 @@ body {
 
 .main-content {
     margin-left: 15.625rem;
+    margin-right: 15.625rem;
     flex: 1;
 }
 
