@@ -70,7 +70,7 @@ func Routes() http.Handler {
 	router.HandleFunc("/Data-Profile", handlers.ProfileHandler)
 	router.HandleFunc("/Data-Categories", handlers.CategoriesHandler)
 
-	router.HandleFunc("/Data-Users", handlers.UsersHandler)
+	router.HandleFunc("/Data-Users", middleware.UsersHandler)
 
 	// ! for testing
 	router.HandleFunc("/test", handlers.NotificaionHandler)

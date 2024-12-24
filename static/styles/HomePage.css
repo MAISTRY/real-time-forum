@@ -23,7 +23,11 @@ body {
     position: fixed;
     /* transition: 0.8s; */
 }
+.sidebar.collapsed { 
+    width: 5rem;
+}
 
+/* new sidebar for the users */
 .users-sidebar {
     width: 40vh;
     height: 100vh;
@@ -65,8 +69,8 @@ body {
 }
 
 .status-icon {
-    width: 10px;
-    height: 10px;
+    width: 0.8rem;
+    height: 0.8rem;
     border-radius: 50%;
     margin-left: auto;
     background-color: #9ca3af;
@@ -77,9 +81,6 @@ body {
     background-color: #22c55e;
 }
 
-.sidebar.collapsed { 
-    width: 5rem;
-}
 .menu-name{
     display: flex;
     flex-wrap: wrap;
