@@ -16,7 +16,21 @@ function formatDate(dateString) {
     interval = seconds / 60;
     if (interval > 1) return Math.floor(interval) + " minutes ago";
     
+    
     return Math.floor(seconds) + " seconds ago";
+}
+
+function MessageLength(message){
+    if (message.length > 10){
+        return message.substring(0, 10) + '...';
+    }
+    return message;
+}
+function UserLength(message){
+    if (message.length > 6){
+        return message.substring(0, 6) + '.';
+    }
+    return message;
 }
   
 async function handlePostInteraction(event,distination) {

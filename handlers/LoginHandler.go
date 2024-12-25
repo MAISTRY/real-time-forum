@@ -1,9 +1,9 @@
 package handlers
 
-import (
+import ( 
+	"RTF/utils"
 	"database/sql"
 	"fmt"
-	"RTF/utils"
 	"log"
 	"net/http"
 	"time"
@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// ! user need to be all lowercase (no uppercase usernames)
 const (
 	GetUserByEmailQuery = `SELECT password, UserID FROM User WHERE username = ? OR email = ?`
 	InsertSessionQuery  = `INSERT INTO Session (session_id, user_id, created_at, expiry_date, ip_address) VALUES (?,?,?,?,?)`

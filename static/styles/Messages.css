@@ -26,6 +26,10 @@
     font-size: 14px;
 }
 
+.message-Time {
+    color: #66666697;
+    font-size: 12px;
+}
 /* Main Chat Area Styles */
 .chat-area {
     flex-grow: 1;

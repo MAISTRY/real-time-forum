@@ -37,6 +37,7 @@ var (
 			m.sender_id,
 			m.receiver_id,
 			m.message,
+			sender.Username AS sender,
 			m.timestamp
 		FROM 
 			Messages m
@@ -61,7 +62,6 @@ var (
 		CheckOrigin:     func(r *http.Request) bool { return true },
 	}
 	syncronize sync.Mutex
-	intUserID  int
 	clients    = make(map[int]*websocket.Conn)
 )
 
@@ -71,11 +71,12 @@ type Msg struct {
 }
 
 type UserStatus struct {
-	UserID      int       `json:"user_id"`
+	UserID      int       `json:"userID"`
 	Username    string    `json:"username"`
-	LastMessage string    `json:"last_message"`
+	LastMessage string    `json:"lastMessage"`
+	Sender      string    `json:"sender"`
 	Status      string    `json:"status"`
-	Timestamp   time.Time `json:"timestamp"`
+	Timestamp   time.Time `json:"timestamp,omitempty"`
 }
 
 func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
@@ -95,7 +96,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	intUserID, err = strconv.Atoi(userID)
+	intUserID, err := strconv.Atoi(userID)
 	if err != nil {
 		log.Printf("Error converting user ID to int %v\n", err)
 		http.Error(w, "Internal Server Error", http.StatusOK)
@@ -118,10 +119,9 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	for {
 		msgType, data, err := conn.ReadMessage()
 		if err != nil {
-			log.Printf("Error reading message: %v\n", err)
+			log.Printf("User %s disconnected: %v\n", userID, err)
 			return
 		}
-		fmt.Printf("Received from %s: %s\n", userID, data)
 
 		err = MessageHandler(userID, msgType, data, db)
 		if err != nil {
@@ -130,10 +130,10 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	syncronize.Lock()
-	delete(clients, intUserID)
-	syncronize.Unlock()
-	fmt.Println("Client disconnected", userID)
+	// syncronize.Lock()
+	// delete(clients, intUserID)
+	// syncronize.Unlock()
+	// fmt.Println("Client disconnected", userID)
 
 }
 
@@ -146,6 +146,25 @@ func UsersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Close()
+
+	userID := r.URL.Query().Get("user")
+	if userID == "" {
+		log.Println("No userID provided")
+		http.Error(w, "No userID provided", http.StatusBadRequest)
+		return
+	}
+
+	intUserID, err := strconv.Atoi(userID)
+	if err != nil {
+		log.Printf("Error converting user ID to int %v\n", err)
+		http.Error(w, "Internal Server Error", http.StatusOK)
+		return
+	}
+	if intUserID == 0 {
+		log.Println("Invalid userID provided")
+		http.Error(w, "Invalid userID provided", http.StatusBadRequest)
+		return
+	}
 
 	// Get all users
 	var allusers []UserStatus
@@ -181,9 +200,9 @@ func UsersHandler(w http.ResponseWriter, r *http.Request) {
 
 		if rows.Next() {
 			var senderID, receiverID int
-			var message string
+			var message, sender string
 			var timestamp time.Time
-			err = rows.Scan(&senderID, &receiverID, &message, &timestamp)
+			err = rows.Scan(&senderID, &receiverID, &message, &sender, &timestamp)
 			if err != nil {
 				log.Printf("Error scanning users %v\n", err)
 				http.Error(w, "Internal Server Error", http.StatusOK)
@@ -191,9 +210,10 @@ func UsersHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			userStatus.LastMessage = message
 			userStatus.Timestamp = timestamp
+			userStatus.Sender = sender
 		} else {
-			userStatus.LastMessage = fmt.Sprintf("Say hi to %s👋", userStatus.Username)
-			userStatus.Timestamp = time.Time{} // Zero value for time
+			userStatus.LastMessage = "Say hi 👋"
+			userStatus.Timestamp = time.Time{} // todo: the value need to be removed
 		}
 
 		userStatus.Status = "offline"
