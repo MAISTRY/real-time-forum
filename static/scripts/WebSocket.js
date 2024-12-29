@@ -6,9 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         socket.onopen = () => {
             console.log("Connection open ...");
-            sendWebSocketMessage({
-                type: 'loadUsers'
-            });
         }
 
         socket.onmessage = (event) => {
@@ -17,11 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'loadUsersResponse':
                     loadUsers(data.users);
                     break;
-                case 'getMessagesResponse':
-                    GetMessages(data.firstUser, data.secondUser);
-                    break;
-                case 'sendMessageResponse':
-                    sendMessage(data.message, data.Sender, data.Receiver);
+                case 'getMessages':
+                    GetMessages(data.messages, data.Sender, data.Receiver);
                     break;
                 default:
                     console.error('Invalid data type');
@@ -50,151 +44,172 @@ function sendWebSocketMessage(message) {
     }
 }
 
-function loadUsers(Users){
+function loadUsers(Users) {
     const UsersContainer = document.getElementById('users-list');
     
-    const fragments = document.createDocumentFragment();
-    
+    // Keep track of existing user IDs, this will be empty when reloading
+    const existingUserItems = new Map();
+    UsersContainer.querySelectorAll('.user-item').forEach(item => {
+        const userId = item.getAttribute('data-user-id');
+        existingUserItems.set(userId, item);
+    });
+
     Users.forEach(user => {
-        const userItem = document.createElement('div');
-        userItem.className = 'user-item';
+        const userId = user.userID.toString();
+        let userItem = existingUserItems.get(userId);
 
-        const ChatInfo = document.createElement('div');
-        ChatInfo.className = 'chat-info';
+        // Create new user item if it doesn't exist
+        if (!userItem) {
+            userItem = document.createElement('div');
+            userItem.className = 'user-item';
+            userItem.setAttribute('data-user-id', userId);
 
-        const username = document.createElement('span');
-        username.className = 'chat-name';
+            const ChatInfo = document.createElement('div');
+            ChatInfo.className = 'chat-info';
+
+            const username = document.createElement('span');
+            username.className = 'chat-name';
+
+            const messageTime = document.createElement('span');
+            messageTime.className = 'message-Time';
+
+            const lastMessage = document.createElement('div');
+            lastMessage.className = 'last-message';
+
+            const status = document.createElement('div');
+
+            ChatInfo.appendChild(username);
+            ChatInfo.appendChild(lastMessage);
+            ChatInfo.appendChild(messageTime);
+
+            userItem.appendChild(ChatInfo);
+            userItem.appendChild(status);
+
+            UsersContainer.appendChild(userItem);
+        }
+
+        const ChatInfo = userItem.querySelector('.chat-info');
+        const username = ChatInfo.querySelector('.chat-name');
+        const messageTime = ChatInfo.querySelector('.message-Time');
+        const lastMessage = ChatInfo.querySelector('.last-message');
+        const status = userItem.querySelector('.status-icon') || document.createElement('div');
+
         username.textContent = user.username;
-
-        const messageTime = document.createElement('span');
-        messageTime.className = 'message-Time';
         messageTime.textContent = formatDate(user.timestamp);
         if (formatDate(user.timestamp) !== '') {
             messageTime.textContent = 'last message ' + formatDate(user.timestamp);
         }
-        
-        const lastMessage = document.createElement('div');
-        lastMessage.className = 'last-message';
-        if (user.sender === ""){
+
+        if (user.sender === "") {
             lastMessage.textContent = MessageLength(user.lastMessage);
-        }
-        else if (user.sender !== user.username && user.lastMessage !== ""){
+        } else if (user.sender !== user.username && user.lastMessage !== "") {
             lastMessage.textContent = MessageLength('You: ' + user.lastMessage);
-        }
-        else {
+        } else {
             lastMessage.textContent = MessageLength(UserLength(user.sender) + ': ' + user.lastMessage);
         }
-        
-        const status = document.createElement('div');
+
         status.className = `status-icon status-${user.status}`;
+        if (!userItem.contains(status)) {
+            userItem.appendChild(status);
+        }
 
-        ChatInfo.appendChild(username);
-        ChatInfo.appendChild(lastMessage);
-        ChatInfo.appendChild(messageTime);
+        userItem.addEventListener('click', () => {
+            sendWebSocketMessage({type: 'GetMessages', secondUser: user.userID});
+            navigateToPage('Messages');
+        });
 
-        userItem.appendChild(ChatInfo);
-        userItem.appendChild(status);
-
-        fragments.appendChild(userItem);
+        // Remove from existing map since we've processed this user
+        existingUserItems.delete(userId);
     });
 
-    UsersContainer.innerHTML = '<p style="text-align: center">Loading Users...</p>';
-    UsersContainer.innerHTML = '';
-    UsersContainer.appendChild(fragments);
+    // Remove user items that are no longer in the new user list
+    existingUserItems.forEach(item => item.remove());
 }
 
-function GetMessages(firstUser, secondUser) {
+function GetMessages(messages, Sender, Receiver) {
 
     const MessagesContainer = document.getElementById('chat-area');
     MessagesContainer.innerHTML = '<p style="text-align: center">Loading Messages...</p>';
-    fetch(`/Data-Message?sender=${firstUser}&receiver=${secondUser}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'x-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to fetch messages');
-        }
-        return response.json();
-    })
-    .then(messages => {
-        const fragments = document.createDocumentFragment();
 
-        const ChatHeader = document.createElement('div');
-        ChatHeader.className = 'chat-header';
-        
-        const Chatimage = document.createElement('img');
-        Chatimage.className = 'avatar';
-        Chatimage.src = '../images/pengin.PNG';
-        
-        const ChatName = document.createElement('div');
-        ChatName.className = 'chat-name';
-        if (secondUser === messages[0].SecondUser){
-            ChatName.textContent = messages[0].Receiver;
+    const fragments = document.createDocumentFragment();
+    const ChatHeader = document.createElement('div');
+    ChatHeader.className = 'chat-header';
+    
+    const Chatimage = document.createElement('img');
+    Chatimage.className = 'avatar';
+    Chatimage.src = '../images/pengin.PNG';
+    
+    const ChatName = document.createElement('div');
+    ChatName.className = 'chat-name';
+    if (Sender === messages[0].FirstUser){
+        ChatName.textContent = messages[0].Receiver;
+    } else {
+        ChatName.textContent = messages[0].Sender;
+    }
+    console.log(messages[0].FirstUser);
+    
+    ChatHeader.appendChild(Chatimage);
+    ChatHeader.appendChild(ChatName);
+
+    const ChatBody = document.createElement('div');
+    ChatBody.className = 'messages';
+    
+    messages.forEach(message =>{
+
+        const messageItem = document.createElement('div');
+        if (Sender === message.FirstUser) {
+            messageItem.className = 'message sent'; 
         } else {
-            ChatName.textContent = messages[0].Sender;
+            messageItem.className = 'message received';
         }
-        
-        ChatHeader.appendChild(Chatimage);
-        ChatHeader.appendChild(ChatName);
 
-        const ChatBody = document.createElement('div');
-        ChatBody.className = 'messages';
-        
-        messages.forEach(message =>{
+        const messageSender = document.createElement('div');
+        messageSender.className = 'message-sender';
+        messageSender.textContent = message.Sender + ':';
 
-            const messageItem = document.createElement('div');
-            if (firstUser === message.FirstUser) {
-                messageItem.className = 'message sent'; 
-            }else {
-                messageItem.className ='message received';
-            }
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        messageContent.textContent = message.message;
 
-            const messageSender = document.createElement('div');
-            messageSender.className = 'message-sender';
-            messageSender.textContent = message.Sender + ':';
+        const messageTime = document.createElement('div');
+        messageTime.className = 'message-time';
+        messageTime.textContent = displayDate(message.timestamp);
 
-            const messageContent = document.createElement('div');
-            messageContent.className = 'message-content';
-            messageContent.textContent = message.message;
+        messageItem.appendChild(messageSender);
+        messageItem.appendChild(messageContent);
+        messageItem.appendChild(messageTime);
 
-            const messageTime = document.createElement('div');
-            messageTime.className = 'message-time';
-            messageTime.textContent = displayDate(message.timestamp);
-
-            messageItem.appendChild(messageSender);
-            messageItem.appendChild(messageContent);
-            messageItem.appendChild(messageTime);
-
-            ChatBody.appendChild(messageItem);
-        })
-
-        const ChatFooter = document.createElement('div');
-        ChatFooter.className = 'input-area';
-        
-        const inputArea = document.createElement('input');
-        inputArea.className = 'message-input';
-        inputArea.placeholder = 'Type a message...';
-        inputArea.type = 'text';
-
-        const sendButton = document.createElement('button');
-        sendButton.className ='send-button';
-        sendButton.textContent = 'Send';
-
-        ChatFooter.appendChild(inputArea);
-        ChatFooter.appendChild(sendButton);
-
-        fragments.appendChild(ChatHeader);
-        fragments.appendChild(ChatBody);
-        fragments.appendChild(ChatFooter);
-
-        MessagesContainer.innerHTML = '';
-        MessagesContainer.appendChild(fragments);
+        ChatBody.appendChild(messageItem);
     })
-    .catch(err => {
-        console.error(err);
-    })
+
+    const ChatFooter = document.createElement('div');
+    ChatFooter.className = 'input-area';
+    
+    const inputArea = document.createElement('input');
+    inputArea.className = 'message-input';
+    inputArea.placeholder = 'Type a message...';
+    inputArea.type = 'text';
+
+    const sendButton = document.createElement('button');
+    sendButton.className ='send-button';
+    sendButton.textContent = 'Send';
+
+    ChatFooter.appendChild(inputArea);
+    ChatFooter.appendChild(sendButton);
+
+    fragments.appendChild(ChatHeader);
+    fragments.appendChild(ChatBody);
+    fragments.appendChild(ChatFooter);
+
+    MessagesContainer.innerHTML = '';
+    MessagesContainer.appendChild(fragments);
+
+    const lastMessage = ChatBody.lastElementChild;
+    if (lastMessage) {
+        lastMessage.scrollIntoView({
+            behavior: 'smooth',
+            block: 'end',
+            inline: 'nearest'
+        });
+    }
 }

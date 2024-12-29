@@ -3,7 +3,6 @@ package middleware
 import (
 	"RTF/DB"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -31,13 +30,34 @@ var (
 			Username ASC;			
 	`
 
-	// todo: add sender to the massage
 	lastMessageQuery = `
 		SELECT 
 			m.sender_id,
 			m.receiver_id,
 			m.message,
 			sender.Username AS sender,
+			m.timestamp
+		FROM 
+			Messages m
+		JOIN 
+			User sender 
+			ON m.sender_id = sender.UserID
+		WHERE 
+			(m.sender_id = ? AND m.receiver_id = ?)
+			OR
+			(m.sender_id = ? AND m.receiver_id = ?)
+		ORDER BY 
+			m.timestamp DESC
+		LIMIT 1;
+	`
+
+	AllMessagesQuery = `
+		SELECT 
+			m.sender_id,
+			m.receiver_id,
+			m.message,
+			sender.Username AS sender,
+			receiver.Username AS receiver,
 			m.timestamp
 		FROM 
 			Messages m
@@ -52,8 +72,7 @@ var (
 			OR
 			(m.sender_id = ? AND m.receiver_id = ?)
 		ORDER BY 
-			m.timestamp DESC
-		LIMIT 1;
+			m.timestamp ASC
 	`
 
 	upgrader = websocket.Upgrader{
@@ -65,19 +84,33 @@ var (
 	clients    = make(map[int]*websocket.Conn)
 )
 
-type Msg struct {
-	Message    string `json:"message"`
-	ReceiverId int    `json:"receiver_id"`
-}
+type (
+	Msg struct {
+		Message    string    `json:"message"`
+		FirstUser  int       `json:"FirstUser"`
+		SecondUser int       `json:"SecondUser"`
+		Sender     string    `json:"Sender"`
+		Receiver   string    `json:"Receiver"`
+		Timestamp  time.Time `json:"timestamp"`
+	}
 
-type UserStatus struct {
-	UserID      int       `json:"userID"`
-	Username    string    `json:"username"`
-	LastMessage string    `json:"lastMessage"`
-	Sender      string    `json:"sender"`
-	Status      string    `json:"status"`
-	Timestamp   time.Time `json:"timestamp,omitempty"`
-}
+	UserStatus struct {
+		UserID      int       `json:"userID"`
+		Username    string    `json:"username"`
+		LastMessage string    `json:"lastMessage"`
+		Sender      string    `json:"sender"`
+		Status      string    `json:"status"`
+		Timestamp   time.Time `json:"timestamp"`
+	}
+
+	WebSocketMessage struct {
+		Type       string    `json:"type"`
+		Message    string    `json:"message,omitempty"`
+		FirstUser  int       `json:"firstUser,omitempty"`
+		SecondUser int       `json:"secondUser,omitempty"`
+		Timestamp  time.Time `json:"timestamp,omitempty"`
+	}
+)
 
 func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -115,63 +148,79 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	clients[intUserID] = conn
 	syncronize.Unlock()
 	fmt.Printf("Client ID:%s connected\n", userID)
+	BroadcastUserList(db)
 
 	for {
-		msgType, data, err := conn.ReadMessage()
-		if err != nil {
-			log.Printf("User %s disconnected: %v\n", userID, err)
-			return
+		var WebMsg WebSocketMessage
+		if err := conn.ReadJSON(&WebMsg); err != nil {
+			log.Printf("Read Error: %v\n", err)
+			break
 		}
 
-		err = MessageHandler(userID, msgType, data, db)
-		if err != nil {
-			log.Printf("Error handling message: %v\n", err)
-			return
+		switch WebMsg.Type {
+		case "GetMessages":
+			messages, err := ShowAllMessages(db, intUserID, WebMsg.SecondUser)
+			log.Print(intUserID)
+			log.Print(WebMsg.SecondUser)
+
+			if err != nil {
+				log.Printf("Error getting users %v\n", err)
+				continue
+			}
+
+			if err := conn.WriteJSON(map[string]interface{}{
+				"type":     "getMessages",
+				"Sender":   intUserID,
+				"Receiver": WebMsg.SecondUser,
+				"messages": messages,
+			}); err != nil {
+				log.Printf("Error Sending message %v\n", err)
+			}
 		}
+
 	}
 
-	// syncronize.Lock()
-	// delete(clients, intUserID)
-	// syncronize.Unlock()
-	// fmt.Println("Client disconnected", userID)
+	syncronize.Lock()
+	delete(clients, intUserID)
+	syncronize.Unlock()
+	fmt.Println("Client disconnected", userID)
+	BroadcastUserList(db)
 
 }
 
-func UsersHandler(w http.ResponseWriter, r *http.Request) {
+func BroadcastUserList(db *sql.DB) {
+	syncronize.Lock()
+	defer syncronize.Unlock()
 
-	db, err := sql.Open("sqlite3", "meow.db")
-	if err != nil {
-		log.Printf("Error getting user %v\n", err)
-		http.Error(w, "Internal Server Error", http.StatusOK)
-		return
+	for user, conn := range clients {
+		users, err := getUsers(db, user)
+		if err != nil {
+			log.Printf("Error getting users %v\n", err)
+			continue
+		}
+
+		if err := conn.WriteJSON(map[string]interface{}{
+			"type":  "loadUsersResponse",
+			"users": users,
+		}); err != nil {
+			log.Printf("Error broadcasting user list %v\n", err)
+			conn.Close()
+			delete(clients, user)
+		}
 	}
-	defer db.Close()
+}
+func getUsers(db *sql.DB, userID int) ([]UserStatus, error) {
 
-	userID := r.URL.Query().Get("user")
-	if userID == "" {
+	if userID == 0 {
 		log.Println("No userID provided")
-		http.Error(w, "No userID provided", http.StatusBadRequest)
-		return
-	}
-
-	intUserID, err := strconv.Atoi(userID)
-	if err != nil {
-		log.Printf("Error converting user ID to int %v\n", err)
-		http.Error(w, "Internal Server Error", http.StatusOK)
-		return
-	}
-	if intUserID == 0 {
-		log.Println("Invalid userID provided")
-		http.Error(w, "Invalid userID provided", http.StatusBadRequest)
-		return
+		return nil, nil
 	}
 
 	// Get all users
 	var allusers []UserStatus
 	userRow, err := db.Query(UsersQuery)
 	if err != nil {
-		http.Error(w, "Error querying UsersQuery", http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 	defer userRow.Close()
 
@@ -180,21 +229,19 @@ func UsersHandler(w http.ResponseWriter, r *http.Request) {
 		err = userRow.Scan(&userStatus.UserID, &userStatus.Username)
 		if err != nil {
 			log.Printf("Error scanning users %v\n", err)
-			http.Error(w, "Internal Server Error", http.StatusOK)
-			return
+			return nil, err
 		}
-		if userStatus.UserID != intUserID {
+		if userStatus.UserID != userID {
 			allusers = append(allusers, userStatus)
 		}
 	}
 
 	// Get user last message for all users
 	for i, userStatus := range allusers {
-		rows, err := db.Query(lastMessageQuery, intUserID, userStatus.UserID, userStatus.UserID, intUserID)
+		rows, err := db.Query(lastMessageQuery, userID, userStatus.UserID, userStatus.UserID, userID)
 		if err != nil {
 			log.Printf("Error getting users %v\n", err)
-			http.Error(w, "Internal Server Error", http.StatusOK)
-			return
+			return nil, err
 		}
 		defer rows.Close()
 
@@ -205,15 +252,14 @@ func UsersHandler(w http.ResponseWriter, r *http.Request) {
 			err = rows.Scan(&senderID, &receiverID, &message, &sender, &timestamp)
 			if err != nil {
 				log.Printf("Error scanning users %v\n", err)
-				http.Error(w, "Internal Server Error", http.StatusOK)
-				return
+				return nil, err
 			}
 			userStatus.LastMessage = message
 			userStatus.Timestamp = timestamp
 			userStatus.Sender = sender
 		} else {
 			userStatus.LastMessage = "Say hi 👋"
-			userStatus.Timestamp = time.Time{} // todo: the value need to be removed
+			userStatus.Timestamp = time.Time{}
 		}
 
 		userStatus.Status = "offline"
@@ -240,13 +286,57 @@ func UsersHandler(w http.ResponseWriter, r *http.Request) {
 		return allusers[i].Timestamp.After(allusers[j].Timestamp)
 	})
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(allusers)
+	return allusers, nil
+}
+
+func ShowAllMessages(db *sql.DB, SenderID int, ReceiverID int) ([]Msg, error) {
+
+	if SenderID == 0 || ReceiverID == 0 {
+		log.Println("Invalid userID provided")
+		return nil, nil
+	}
+
+	var allMessages []Msg
+	rows, err := db.Query(AllMessagesQuery, SenderID, ReceiverID, ReceiverID, SenderID)
+	if err != nil {
+		log.Printf("Error getting users %v\n", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var msg Msg
+		err = rows.Scan(&msg.FirstUser, &msg.SecondUser, &msg.Message, &msg.Sender, &msg.Receiver, &msg.Timestamp)
+		if err != nil {
+			log.Printf("Error scanning users %v\n", err)
+			return nil, err
+		}
+		allMessages = append(allMessages, msg)
+	}
+
+	return allMessages, nil
 
 }
 
-func MessageHandler(userID string, msgType int, message []byte, db *sql.DB) error {
+func MessageHandler(userID string, msgType string, message []byte, db *sql.DB) error {
 
 	// MessageID, err := DB.InsertMessage(senderId, receiverId, string(message))
+	// var msg Msg
+	// if err := json.Unmarshal(message, &msg); err != nil {
+	// 	return err
+	// }
+
+	// switch msgType {
+	// case "message":
+	// 	syncronize.Lock()
+	// 	if conn, ok := clients[msg.Sender]; ok {
+	// 		conn.WriteJSON(map[string]interface{}{
+	// 			"type":       "messageUpdate",
+	// 			"firstUser":  msg.FirstUser,
+	// 			"secondUser": msg.SecondUser,
+	// 		})
+	// 	}
+
+	// }
 	return nil
 }

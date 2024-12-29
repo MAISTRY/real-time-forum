@@ -1,5 +1,8 @@
 function formatDate(dateString) {
     const seconds = Math.floor((new Date() - new Date(dateString)) / 1000);
+    if (dateString.startsWith('0001-01-01')) {
+        return '';
+    }
 
     let interval = seconds / 31536000;
     if (interval > 1) return Math.floor(interval) + " years ago";
@@ -20,17 +23,33 @@ function formatDate(dateString) {
     return Math.floor(seconds) + " seconds ago";
 }
 
+function displayDate(timestamp) {
+    if (timestamp.startsWith('0001-01-01')) {
+        return '';
+    }
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    return `${day}-${month}-${year} ${hours}:${minutes} ${ampm}`;
+}
+
 function MessageLength(message){
-    if (message.length > 10){
-        return message.substring(0, 10) + '...';
+    if (message.length > 18){
+        return message.substring(0, 18) + '...';
     }
     return message;
 }
-function UserLength(message){
-    if (message.length > 6){
-        return message.substring(0, 6) + '.';
+function UserLength(user){
+    if (user.length > 6){
+        return user.substring(0, 6) + '.';
     }
-    return message;
+    return user;
 }
   
 async function handlePostInteraction(event,distination) {
