@@ -44,6 +44,18 @@ function sendWebSocketMessage(message) {
     }
 }
 
+//* To Be Continued
+function notification(notif) {
+    Notification.requestPermission().then(prem => {
+        if (prem === 'granted') {
+            new Notification(notif.message ,{
+                body: notif.details,
+                icon: "../images/pengin.PNG"
+            });
+        }
+    })
+}
+
 function loadUsers(Users) {
     const UsersContainer = document.getElementById('users-list');
     
@@ -114,7 +126,7 @@ function loadUsers(Users) {
         }
 
         userItem.addEventListener('click', () => {
-            sendWebSocketMessage({type: 'GetMessages', secondUser: user.userID});
+            sendWebSocketMessage({type: 'GetMessages', secondUser: user.userID, Receiver: user.username});
             navigateToPage('Messages');
         });
 
@@ -139,48 +151,52 @@ function GetMessages(messages, Sender, Receiver) {
     Chatimage.className = 'avatar';
     Chatimage.src = '../images/pengin.PNG';
     
+    const HeaderParts = document.createElement('div');
+
     const ChatName = document.createElement('div');
     ChatName.className = 'chat-name';
-    if (Sender === messages[0].FirstUser){
-        ChatName.textContent = messages[0].Receiver;
-    } else {
-        ChatName.textContent = messages[0].Sender;
-    }
-    console.log(messages[0].FirstUser);
+    ChatName.textContent = Receiver;
     
+    const TypingStatus = document.createElement('div');
+    TypingStatus.className = 'Typing';
+    TypingStatus.id = `TypingStatus-${messages.Sender}`;
+
+    HeaderParts.appendChild(ChatName);
+    HeaderParts.appendChild(TypingStatus);
     ChatHeader.appendChild(Chatimage);
-    ChatHeader.appendChild(ChatName);
+    ChatHeader.appendChild(HeaderParts);
 
     const ChatBody = document.createElement('div');
     ChatBody.className = 'messages';
-    
-    messages.forEach(message =>{
 
-        const messageItem = document.createElement('div');
-        if (Sender === message.FirstUser) {
-            messageItem.className = 'message sent'; 
-        } else {
-            messageItem.className = 'message received';
-        }
+    if (messages) {
+        messages.forEach(message =>{
+            const messageItem = document.createElement('div');
+            if (message.FirstUser === Sender) {
+                messageItem.className = 'message sent'; 
+            } else {
+                messageItem.className = 'message received';
+            }
 
-        const messageSender = document.createElement('div');
-        messageSender.className = 'message-sender';
-        messageSender.textContent = message.Sender + ':';
+            const messageSender = document.createElement('div');
+            messageSender.className = 'message-sender';
+            messageSender.textContent = message.Sender + ':';
 
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message-content';
-        messageContent.textContent = message.message;
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = message.message;
 
-        const messageTime = document.createElement('div');
-        messageTime.className = 'message-time';
-        messageTime.textContent = displayDate(message.timestamp);
+            const messageTime = document.createElement('div');
+            messageTime.className = 'message-time';
+            messageTime.textContent = displayDate(message.timestamp);
 
-        messageItem.appendChild(messageSender);
-        messageItem.appendChild(messageContent);
-        messageItem.appendChild(messageTime);
+            messageItem.appendChild(messageSender);
+            messageItem.appendChild(messageContent);
+            messageItem.appendChild(messageTime);
 
-        ChatBody.appendChild(messageItem);
-    })
+            ChatBody.appendChild(messageItem);
+        })
+    }
 
     const ChatFooter = document.createElement('div');
     ChatFooter.className = 'input-area';
