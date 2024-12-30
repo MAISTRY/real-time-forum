@@ -15,7 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadUsers(data.users);
                     break;
                 case 'getMessages':
-                    GetMessages(data.messages, data.Sender, data.Receiver);
+                    GetMessages(data.messages, data.Sender, data.Receiver, data.ReceiverID);
+                    break;
+                case 'SendMessage':
+                    AddMessage(data.messages, data.Sender);
+                    sendWebSocketMessage({type: 'loadUsers'}); // Corrected message type
+                    break;
+                case 'Offline':
+                    alert('User offline');
+                    // change this way, noobs only use alert
                     break;
                 default:
                     console.error('Invalid data type');
@@ -109,7 +117,7 @@ function loadUsers(Users) {
         username.textContent = user.username;
         messageTime.textContent = formatDate(user.timestamp);
         if (formatDate(user.timestamp) !== '') {
-            messageTime.textContent = 'last message ' + formatDate(user.timestamp);
+            messageTime.textContent = 'last message ' + ShortDate(user.timestamp);
         }
 
         if (user.sender === "") {
@@ -138,7 +146,7 @@ function loadUsers(Users) {
     existingUserItems.forEach(item => item.remove());
 }
 
-function GetMessages(messages, Sender, Receiver) {
+function GetMessages(messages, Sender, Receiver, ReceiverID) {
 
     const MessagesContainer = document.getElementById('chat-area');
     MessagesContainer.innerHTML = '<p style="text-align: center">Loading Messages...</p>';
@@ -159,7 +167,7 @@ function GetMessages(messages, Sender, Receiver) {
     
     const TypingStatus = document.createElement('div');
     TypingStatus.className = 'Typing';
-    TypingStatus.id = `TypingStatus-${messages.Sender}`;
+    TypingStatus.id = `TypingStatus-${ReceiverID}`;
 
     HeaderParts.appendChild(ChatName);
     HeaderParts.appendChild(TypingStatus);
@@ -167,35 +175,83 @@ function GetMessages(messages, Sender, Receiver) {
     ChatHeader.appendChild(HeaderParts);
 
     const ChatBody = document.createElement('div');
+    ChatBody.id = 'messages';
     ChatBody.className = 'messages';
 
     if (messages) {
-        messages.forEach(message =>{
-            const messageItem = document.createElement('div');
-            if (message.FirstUser === Sender) {
-                messageItem.className = 'message sent'; 
-            } else {
-                messageItem.className = 'message received';
+
+        const messageChunks = [];
+        const totalMessages = messages.length;
+
+        // Calculate the number of full 10-message chunks needed
+        const remainder = totalMessages % 10;
+        let startIndex = 0;
+
+        // If there is a remainder, create the first chunk with the remainder
+        if (remainder !== 0) {
+            const firstChunk = messages.slice(0, remainder);
+            messageChunks.push(firstChunk);
+            startIndex = remainder;
+        }
+
+        // Create chunks of 10 for the remaining messages
+        for (let i = startIndex; i < totalMessages; i += 10) {
+            const chunk = messages.slice(i, i + 10);
+            messageChunks.push(chunk);
+        }
+
+        // ChunkNumber will point to the last chunk
+        let ChunkNumber = messageChunks.length-1;
+        let test = messages.length;
+
+        console.log(test);
+        console.log(messageChunks)
+
+
+        ChatBody.addEventListener('scroll', throttle(handleScroll, 200));
+
+        function handleScroll() {
+            if (ChatBody.scrollTop === 0 && ChunkNumber != 0) {
+                ChunkNumber -= 1;
+                loadMoreMessages(ChunkNumber);
             }
+        }
 
-            const messageSender = document.createElement('div');
-            messageSender.className = 'message-sender';
-            messageSender.textContent = message.Sender + ':';
+        function loadMoreMessages(num) {       
 
-            const messageContent = document.createElement('div');
-            messageContent.className = 'message-content';
-            messageContent.textContent = message.message;
+            const previousScrollHeight = ChatBody.scrollHeight;
+            const Chunk = document.createDocumentFragment();
 
-            const messageTime = document.createElement('div');
-            messageTime.className = 'message-time';
-            messageTime.textContent = displayDate(message.timestamp);
+            messageChunks[num].forEach(message =>{
+                const messageItem = document.createElement('div');
+                if (message.FirstUser === Sender) {
+                    messageItem.className = 'message sent'; 
+                } else {
+                    messageItem.className = 'message received';
+                }
 
-            messageItem.appendChild(messageSender);
-            messageItem.appendChild(messageContent);
-            messageItem.appendChild(messageTime);
+                const messageSender = document.createElement('div');
+                messageSender.className = 'message-sender';
+                messageSender.textContent = message.Sender + ':';
 
-            ChatBody.appendChild(messageItem);
-        })
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                messageContent.textContent = message.message;
+
+                const messageTime = document.createElement('div');
+                messageTime.className = 'message-time';
+                messageTime.textContent = displayDate(message.timestamp);
+
+                messageItem.appendChild(messageSender);
+                messageItem.appendChild(messageContent);
+                messageItem.appendChild(messageTime);
+
+                Chunk.appendChild(messageItem);
+            })
+            ChatBody.prepend(Chunk);
+            ChatBody.scrollTop = ChatBody.scrollHeight - previousScrollHeight;
+        }
+        loadMoreMessages(ChunkNumber);
     }
 
     const ChatFooter = document.createElement('div');
@@ -206,9 +262,17 @@ function GetMessages(messages, Sender, Receiver) {
     inputArea.placeholder = 'Type a message...';
     inputArea.type = 'text';
 
-    const sendButton = document.createElement('button');
+    const sendButton = document.createElement('div');
     sendButton.className ='send-button';
     sendButton.textContent = 'Send';
+
+    sendButton.addEventListener('click', () => {
+        const message = inputArea.value;
+        if (message.trim()!== '') {
+            sendWebSocketMessage({type: 'SendMessage', message: message, secondUser: ReceiverID, Receiver: Receiver});
+            inputArea.value = '';
+        }
+    });
 
     ChatFooter.appendChild(inputArea);
     ChatFooter.appendChild(sendButton);
@@ -220,12 +284,65 @@ function GetMessages(messages, Sender, Receiver) {
     MessagesContainer.innerHTML = '';
     MessagesContainer.appendChild(fragments);
 
-    const lastMessage = ChatBody.lastElementChild;
-    if (lastMessage) {
-        lastMessage.scrollIntoView({
-            behavior: 'smooth',
-            block: 'end',
-            inline: 'nearest'
-        });
+    ChatBody.scrollTo({
+        top: ChatBody.scrollHeight,
+        behavior: 'smooth',
+    });
+    
+}
+
+function AddMessage(message, Sender) {
+
+    const ChatBody = document.getElementById('messages');
+
+    const messageItem = document.createElement('div');
+    if (message.FirstUser === Sender) {
+        messageItem.className = 'message sent'; 
+    } else {
+        messageItem.className = 'message received';
+    }
+
+    const messageSender = document.createElement('div');
+    messageSender.className = 'message-sender';
+    messageSender.textContent = message.Sender + ':';
+
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    messageContent.textContent = message.message;
+
+    const messageTime = document.createElement('div');
+    messageTime.className = 'message-time';
+    messageTime.textContent = displayDate(message.timestamp);
+
+    messageItem.appendChild(messageSender);
+    messageItem.appendChild(messageContent);
+    messageItem.appendChild(messageTime);
+
+    ChatBody.appendChild(messageItem);
+
+    ChatBody.scrollTo({
+        top: ChatBody.scrollHeight,
+        behavior: 'smooth',
+    });
+}
+
+function throttle(func, limit) {
+    let lastFunc;
+    let lastRan;
+    return function() {
+        const context = this;
+        const args = arguments;
+        if (!lastRan) {
+            func.apply(context, args);
+            lastRan = Date.now();
+        } else {
+            clearTimeout(lastFunc);
+            lastFunc = setTimeout(function() {
+                if ((Date.now() - lastRan) >= limit) {
+                    func.apply(context, args);
+                    lastRan = Date.now();
+                }
+            }, limit - (Date.now() - lastRan));
+        }
     }
 }

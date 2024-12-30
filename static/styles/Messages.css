@@ -50,6 +50,11 @@
     margin-right: 15px;
 }
 
+.Typing {
+    font-size: 10px;
+    color: #666;
+}
+
 .messages {
     flex-grow: 1;
     padding: 40px;
@@ -120,6 +125,14 @@
     border-radius: 20px;
     cursor: pointer;
     font-weight: bold;
+}
+
+.chat-startUp {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
 }
 
 .send-button:hover {

@@ -39,6 +39,26 @@ function displayDate(timestamp) {
     return `${day}-${month}-${year} ${hours}:${minutes} ${ampm}`;
 }
 
+
+function ShortDate(dateString) {
+    const seconds = Math.floor((new Date() - new Date(dateString)) / 1000);
+    if (dateString.startsWith('0001-01-01')) {
+        return '';
+    }
+
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    
+    return "today";
+}
+
+
 function MessageLength(message){
     if (message.length > 18){
         return message.substring(0, 18) + '...';

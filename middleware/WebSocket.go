@@ -30,6 +30,26 @@ var (
 			Username ASC;			
 	`
 
+	OneMessagesQuery = `
+	    SELECT
+			m.sender_id,
+			m.receiver_id,
+			m.message,
+			sender.Username AS sender,
+			receiver.Username AS receiver,
+			m.timestamp
+		FROM
+			Messages m
+		JOIN 
+			User sender 
+			ON m.sender_id = sender.UserID
+		JOIN
+			User receiver
+			ON m.receiver_id = receiver.UserID
+		WHERE
+			m.id = ?
+	`
+
 	lastMessageQuery = `
 		SELECT 
 			m.sender_id,
@@ -105,6 +125,7 @@ type (
 
 	WebSocketMessage struct {
 		Type       string    `json:"type"`
+		Receiver   string    `json:"receiver,omitempty"`
 		Message    string    `json:"message,omitempty"`
 		FirstUser  int       `json:"firstUser,omitempty"`
 		SecondUser int       `json:"secondUser,omitempty"`
@@ -160,24 +181,69 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		switch WebMsg.Type {
 		case "GetMessages":
 			messages, err := ShowAllMessages(db, intUserID, WebMsg.SecondUser)
-			log.Print(intUserID)
-			log.Print(WebMsg.SecondUser)
-
 			if err != nil {
 				log.Printf("Error getting users %v\n", err)
 				continue
 			}
 
 			if err := conn.WriteJSON(map[string]interface{}{
-				"type":     "getMessages",
-				"Sender":   intUserID,
-				"Receiver": WebMsg.SecondUser,
-				"messages": messages,
+				"type":       "getMessages",
+				"Sender":     intUserID,
+				"Receiver":   WebMsg.Receiver,
+				"ReceiverID": WebMsg.SecondUser,
+				"messages":   messages,
 			}); err != nil {
 				log.Printf("Error Sending message %v\n", err)
 			}
-		}
 
+		case "SendMessage":
+			found := false
+			var SecondUserConn *websocket.Conn
+			for user, conn := range clients {
+				if user == WebMsg.SecondUser {
+					found = true
+					SecondUserConn = conn
+				}
+			}
+			if found {
+				message, err := MessageHandler(db, intUserID, WebMsg.SecondUser, WebMsg.Message)
+				if err != nil {
+					log.Printf("Error getting Message from User%v\n", err)
+					continue
+				}
+
+				if err := conn.WriteJSON(map[string]interface{}{
+					"type":       "SendMessage",
+					"Sender":     intUserID,
+					"Receiver":   WebMsg.Receiver,
+					"ReceiverID": WebMsg.SecondUser,
+					"messages":   message,
+				}); err != nil {
+					log.Printf("Error Sending message %v\n", err)
+				}
+
+				if err := SecondUserConn.WriteJSON(map[string]interface{}{
+					"type":       "SendMessage",
+					"Sender":     WebMsg.SecondUser,
+					"Receiver":   WebMsg.Receiver,
+					"ReceiverID": intUserID,
+					"messages":   message,
+				}); err != nil {
+					log.Printf("Error Sending message %v\n", err)
+				}
+			} else {
+				if err := conn.WriteJSON(map[string]interface{}{
+					"type":       "Offline",
+					"Sender":     intUserID,
+					"Receiver":   WebMsg.Receiver,
+					"ReceiverID": WebMsg.SecondUser,
+				}); err != nil {
+					log.Printf("Error Sending message %v\n", err)
+				}
+			}
+		case "loadUsers":
+			BroadcastUserList(db)
+		}
 	}
 
 	syncronize.Lock()
@@ -186,6 +252,27 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Client disconnected", userID)
 	BroadcastUserList(db)
 
+}
+
+func MessageHandler(db *sql.DB, senderId int, receiverId int, message string) (Msg, error) {
+
+	var Message Msg
+	if senderId == 0 || receiverId == 0 {
+		log.Println("Invalid userID provided")
+		return Message, nil
+	}
+
+	MessageID, err := DB.InsertMessage(senderId, receiverId, message)
+	if err != nil {
+		log.Printf("Error inserting message %v\n", err)
+		return Message, err
+	}
+
+	if err = db.QueryRow(OneMessagesQuery, MessageID).Scan(&Message.FirstUser, &Message.SecondUser, &Message.Message, &Message.Sender, &Message.Receiver, &Message.Timestamp); err != nil {
+		return Message, err
+	}
+
+	return Message, nil
 }
 
 func BroadcastUserList(db *sql.DB) {
@@ -316,27 +403,4 @@ func ShowAllMessages(db *sql.DB, SenderID int, ReceiverID int) ([]Msg, error) {
 
 	return allMessages, nil
 
-}
-
-func MessageHandler(userID string, msgType string, message []byte, db *sql.DB) error {
-
-	// MessageID, err := DB.InsertMessage(senderId, receiverId, string(message))
-	// var msg Msg
-	// if err := json.Unmarshal(message, &msg); err != nil {
-	// 	return err
-	// }
-
-	// switch msgType {
-	// case "message":
-	// 	syncronize.Lock()
-	// 	if conn, ok := clients[msg.Sender]; ok {
-	// 		conn.WriteJSON(map[string]interface{}{
-	// 			"type":       "messageUpdate",
-	// 			"firstUser":  msg.FirstUser,
-	// 			"secondUser": msg.SecondUser,
-	// 		})
-	// 	}
-
-	// }
-	return nil
 }

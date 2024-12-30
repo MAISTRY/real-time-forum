@@ -8,7 +8,7 @@ import (
 
 const (
 	InsertMessageQuery = `
-        INSERT INTO "Comment" (sender_id, receiver_id, message)
+        INSERT INTO "Messages" (sender_id, receiver_id, message)
         VALUES (?,?,?)
     `
 )
