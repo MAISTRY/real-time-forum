@@ -52,16 +52,18 @@ function sendWebSocketMessage(message) {
     }
 }
 
-//* To Be Continued
-function notification(notif) {
-    Notification.requestPermission().then(prem => {
-        if (prem === 'granted') {
-            new Notification(notif.message ,{
-                body: notif.details,
-                icon: "../images/pengin.PNG"
-            });
-        }
-    })
+function notification(SenderID, Message, Sender) {
+    if (Notification.permission === 'default') {
+        Notification.requestPermission();
+    } else if (Notification.permission === 'granted') {
+        new Notification(Sender ,{
+            body: Message,
+            icon: "../images/pengin.PNG",
+            tag: SenderID
+        });
+    } else {
+        alert(`${Sender}: ${Message}`);
+    }
 }
 
 function loadUsers(Users) {
@@ -136,6 +138,8 @@ function loadUsers(Users) {
         userItem.addEventListener('click', () => {
             sendWebSocketMessage({type: 'GetMessages', secondUser: user.userID, Receiver: user.username});
             navigateToPage('Messages');
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(i => i.classList.remove('color'));
         });
 
         // Remove from existing map since we've processed this user
@@ -183,30 +187,22 @@ function GetMessages(messages, Sender, Receiver, ReceiverID) {
         const messageChunks = [];
         const totalMessages = messages.length;
 
-        // Calculate the number of full 10-message chunks needed
         const remainder = totalMessages % 10;
         let startIndex = 0;
 
-        // If there is a remainder, create the first chunk with the remainder
         if (remainder !== 0) {
             const firstChunk = messages.slice(0, remainder);
             messageChunks.push(firstChunk);
             startIndex = remainder;
         }
 
-        // Create chunks of 10 for the remaining messages
         for (let i = startIndex; i < totalMessages; i += 10) {
             const chunk = messages.slice(i, i + 10);
             messageChunks.push(chunk);
         }
 
-        // ChunkNumber will point to the last chunk
         let ChunkNumber = messageChunks.length-1;
         let test = messages.length;
-
-        console.log(test);
-        console.log(messageChunks)
-
 
         ChatBody.addEventListener('scroll', throttle(handleScroll, 200));
 
@@ -300,6 +296,12 @@ function AddMessage(message, Sender) {
         messageItem.className = 'message sent'; 
     } else {
         messageItem.className = 'message received';
+
+        if (document.visibilityState === 'hidden') {
+            console.log('User is not viewing the page.');
+            notification(message.FirstUser, message.message, message.Sender);
+        } 
+
     }
 
     const messageSender = document.createElement('div');

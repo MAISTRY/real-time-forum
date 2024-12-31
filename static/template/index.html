@@ -42,16 +42,11 @@
                 <i class="material-icons">chat</i>
                 <span>creat post</span>
             </a>
-            
-            <a class="text-item menu-item privilage disabled-link" data-page="Messages">
-                <i class="material-icons">inbox</i>
-                <span>Messages</span>
-            </a>
 
             <a class="text-item menu-item privilage disabled-link" data-has-Submenu="true" data-page="Profile" title="Profile">
                 <i class="material-icons">person</i>
                 <span>Profile</span>
-                <i class="material-icons sub-menu">ss arrow_drop_down</i>
+                <i class="material-icons sub-menu">arrow_drop_down</i>
             </a>
            <div class="sub-menu">
                 <div class="sub-menu-item" data-page="Created">created posts</div>
@@ -279,33 +274,34 @@
             </div>
         </div>
 
-        <div id="Messages" class="ChatDiv">
+        <div id="Messages" class="deactive">
+            <div id="chat-container">
                 <div id="chat-area" class="chat-area">
                     <!-- Chat messages will be inserted here -->
                      <!-- Main Chat Area -->
-                <div class="chat-area">
-                    <div class="chat-header">
-                        <img class="avatar" src="../images/pengin.PNG">
-                        <div>
-                            <div class="chat-name">Messages</div>
-                            <div class="Typing">User is Typing...</div>
+                    <div class="chat-area">
+                        <div class="chat-header">
+                            <img class="avatar" src="../images/pengin.PNG">
+                            <div>
+                                <div class="chat-name">Messages</div>
+                                <div class="Typing">User is Typing...</div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="chat-startUp">
-                        <div >
-                            Welcome to Penguinity Chat 😁
+                        <div class="chat-startUp">
+                            <div >
+                                Welcome to Penguinity Chat 😁
+                            </div>
+                            <div>
+                                Select User from the right to start Chating
+                            </div>
                         </div>
-                        <div>
-                            Select User from the right to start Chating
+                        <div class="input-area">
+                            <input type="text" class="message-input" placeholder="Select User First">
+                            <button class="send-button">Send</button>
                         </div>
-                    </div>
-                    <div class="input-area">
-                        <input type="text" class="message-input" placeholder="Select User First">
-                        <button class="send-button">Send</button>
                     </div>
                 </div>
-            
-                </div>
+            </div>
         </div>
 
         <div id="Profile" class="deactive">
@@ -323,7 +319,7 @@
             <h1 class="pageTitle">Disliked</h1> 
         </div>
 
-        <!-- <div id="Error" class="deactive">
+        <div id="Error" class="deactive">
             <div class="pageContainer">
                 <div class="error-container">
                     <div class="error-header">
@@ -335,7 +331,7 @@
                     </div>
                 </div>
             </div>
-        </div> -->
+        </div>
 
     </div>
     <script src="../scripts/Page.js"></script>

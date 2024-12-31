@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const loginButtons = document.querySelectorAll(".login-buttons");
         const logoutButtons = document.querySelectorAll(".logout-buttons");
         const privilage = document.querySelectorAll(".privilage");
+
+        const mainContent = document.querySelector('.main-content');
+        const RightBar = document.querySelector('.RightSidebar')
+
         
             if (data.authenticated && data.privilege === 1) {
                 loginButtons.forEach(section => section.classList.add('deactive'));
@@ -37,6 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!validPages.includes('Login','Register')) {
                     validPages.push('Login','Register');
                 }
+
+                mainContent.classList.add('RightBar');
+                RightBar.classList.add('deactive');
             }
             setupNavigationListeners();
     })

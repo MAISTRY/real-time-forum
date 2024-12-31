@@ -1,5 +1,7 @@
 package handlers
 
+import "time"
+
 type Err struct {
 	ErrorMessage string `json:"errorMessage"`
 	Statuscode   int    `json:"statuscode"`
@@ -55,4 +57,22 @@ type CommentedPost struct {
 type CommentRequest struct {
 	PostID  string `json:"postId"`
 	Comment string `json:"comment"`
+}
+
+type Msg struct {
+	Message    string    `json:"message"`
+	FirstUser  int       `json:"FirstUser"`
+	SecondUser int       `json:"SecondUser"`
+	Sender     string    `json:"Sender"`
+	Receiver   string    `json:"Receiver"`
+	Timestamp  time.Time `json:"timestamp"`
+}
+
+type UserStatus struct {
+	UserID      int       `json:"userID"`
+	Username    string    `json:"username"`
+	LastMessage string    `json:"lastMessage"`
+	Sender      string    `json:"sender"`
+	Status      string    `json:"status"`
+	Timestamp   time.Time `json:"timestamp"`
 }

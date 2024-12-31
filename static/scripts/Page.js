@@ -2,8 +2,17 @@
 let isCollapsed = false;
 const sidebar = document.getElementById('sidebar');
 const mainContent = document.querySelector('.main-content');
+const usersidebar = document.querySelector('.users-sidebar');
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    const storedState = localStorage.getItem('isCollapsed');
+    if (storedState !== null) {
+        isCollapsed = JSON.parse(storedState);
+        sidebar.classList.toggle('collapsed', isCollapsed);
+        mainContent.classList.toggle('collapsed', isCollapsed);
+        usersidebar.classList.toggle('collapsed', isCollapsed);
+    }
 
     const menu = document.querySelector(".menu");
     const menuItems = document.querySelectorAll('.menu-item');
@@ -33,15 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 subMenu.classList.toggle('show');
-                arrowIcon.textContent = subMenu.classList.contains('show') ? 'ss arrow_drop_up' : 'ss arrow_drop_down';
+                arrowIcon.textContent = subMenu.classList.contains('show') ? 'arrow_drop_up' : 'arrow_drop_down';
 
             }
         });
-
-        menu.addEventListener("click", () => {
-
-            sidebar.classList.toggle('collapsed', isCollapsed);
-        })
         
     });
 
@@ -49,6 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
         isCollapsed = !isCollapsed;
         sidebar.classList.toggle('collapsed', isCollapsed);
         mainContent.classList.toggle('collapsed', isCollapsed);
+        usersidebar.classList.toggle('collapsed', isCollapsed);
+
+        localStorage.setItem('isCollapsed', JSON.stringify(isCollapsed));
     });
 
 });

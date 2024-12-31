@@ -1,4 +1,4 @@
-#Messages {
+#chat-container {
     display: flex;
     height: 100vh;
     padding: unset;
@@ -139,10 +139,6 @@
     background-color: #5600b8;
 }
 
-.ChatDiv.deactive {
-    display: none !important;
-}
-
-.ChatDiv.active {
-    display: flex !important;
+#Messages {
+    padding: 0;
 }
