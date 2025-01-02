@@ -17,7 +17,7 @@ body {
 
 .sidebar {
     width: 11.625rem;
-    height: 100vh;
+    min-height: 100vh;
     background: white;
     padding: 1rem;
     box-shadow: 0.125rem 0 0.3125rem rgba(0,0,0,0.1);
@@ -295,4 +295,14 @@ body {
 @keyframes fadeIn {
     from { opacity: 0; }
       to { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+    .users-sidebar {
+        display: none;
+    }
+
+    .main-content {
+        margin-right: 0;
+    }
 }

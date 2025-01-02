@@ -1,4 +1,5 @@
-document.addEventListener('DOMContentLoaded', () => {
+function StartWebSocket() {
+
     if (window["WebSocket"]) {
         // Connect to websocket
         socket = new WebSocket("wss://" + document.location.host + "/ws");
@@ -42,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         alert("Not supporting websockets");
     }
-})
+}
 
 function sendWebSocketMessage(message) {
     if (socket.readyState === WebSocket.OPEN) {
@@ -258,7 +259,7 @@ function GetMessages(messages, Sender, Receiver, ReceiverID) {
     inputArea.placeholder = 'Type a message...';
     inputArea.type = 'text';
 
-    const sendButton = document.createElement('div');
+    const sendButton = document.createElement('button');
     sendButton.className ='send-button';
     sendButton.textContent = 'Send';
 
@@ -267,6 +268,16 @@ function GetMessages(messages, Sender, Receiver, ReceiverID) {
         if (message.trim()!== '') {
             sendWebSocketMessage({type: 'SendMessage', message: message, secondUser: ReceiverID, Receiver: Receiver});
             inputArea.value = '';
+        }
+    });
+
+    inputArea.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            const message = inputArea.value;
+            if (message.trim() !== '') {
+                sendWebSocketMessage({type: 'SendMessage', message: message, secondUser: ReceiverID, Receiver: Receiver});
+                inputArea.value = '';
+            }
         }
     });
 
@@ -326,25 +337,4 @@ function AddMessage(message, Sender) {
         top: ChatBody.scrollHeight,
         behavior: 'smooth',
     });
-}
-
-function throttle(func, limit) {
-    let lastFunc;
-    let lastRan;
-    return function() {
-        const context = this;
-        const args = arguments;
-        if (!lastRan) {
-            func.apply(context, args);
-            lastRan = Date.now();
-        } else {
-            clearTimeout(lastFunc);
-            lastFunc = setTimeout(function() {
-                if ((Date.now() - lastRan) >= limit) {
-                    func.apply(context, args);
-                    lastRan = Date.now();
-                }
-            }, limit - (Date.now() - lastRan));
-        }
-    }
 }

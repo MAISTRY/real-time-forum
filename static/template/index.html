@@ -65,7 +65,7 @@
                 <i class="material-icons" >login</i>
                 <span >Login</span>
             </a>
-            <a class="text-item menu-item logout-buttons" hx-post="/Data-userLogout">
+            <a class="text-item logout-buttons" id="logoutForm">
                 <i class="material-icons" >logout</i>
                 <span >logout</span>
             </a>
@@ -98,7 +98,7 @@
                     <div class="form-header">
                         <h2>Login Form</h2>
                     </div>
-                    <form class="modal-content animate" hx-post="/Data-userLogin" hx-target="#login_err_field" hx-swap="innerHTML">
+                    <form class="modal-content animate" id="loginForm">
                         <div class="form-group">
                             <input class="input-bigholder" type="text" placeholder="Enter your Username" name="username" required autocomplete="true">
                         </div>
@@ -142,7 +142,7 @@
                     <div class="form-header">
                         <h2>Registration Form</h2>
                     </div>
-                    <form class="modal-content animate" hx-post="/Data-userRegister" hx-target="#register_err_field" hx-swap="innerHTML">
+                    <form class="modal-content animate" id="RegisterForm">
                         <div class="form-group">        
                             <input type="text" id="newUsername" name="newUsername" placeholder="Username" required autocomplete="true">
                         </div>
@@ -327,7 +327,7 @@
                     </div>
                     <div class="error-post">
                         <p id="error-message">Sorry, the page you requested was moved, removed, renamed or might never existed.</p>
-                        <button class="close-error" data-page="Home">Go Home</button>        
+                        <button class="close-error" data-page="Home">Go Home</button>
                     </div>
                 </div>
             </div>
@@ -342,5 +342,6 @@
     <script src="../scripts/fetchCategory.js"></script>
     <script src="../scripts/fetchProfile.js"></script>
     <script src="../scripts/WebSocket.js"></script>
+    <script src="../scripts/fetchUserInteraction.js"></script>
 </body>
 </html>

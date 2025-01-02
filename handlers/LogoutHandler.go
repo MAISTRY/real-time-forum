@@ -51,10 +51,10 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		MaxAge: -1,
 	})
 
-	// w.Write([]byte("Logout successful"))
+	w.Write([]byte("Logout successful"))
 
-	w.Header().Set("HX-Redirect", "/")
-	fmt.Fprintf(w, `<html><head><meta http-equiv="refresh" content="0;url=/home"></head></html>`)
+	// w.Header().Set("HX-Redirect", "/")
+	// fmt.Fprintf(w, `<html><head><meta http-equiv="refresh" content="0;url=/home"></head></html>`)
 
 }
 

@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"database/sql"
-	"fmt"
 	"RTF/utils"
+	"database/sql"
 	"log"
 	"net/http"
 	"regexp"
@@ -233,7 +232,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, yummyCookie)
 	w.Write([]byte("Registration successful"))
-	w.Header().Set("HX-Redirect", "/")
-	fmt.Fprintf(w, `<html><head><meta http-equiv="refresh" content="0;url=/home"></head></html>`)
+	// w.Header().Set("HX-Redirect", "/")
+	// fmt.Fprintf(w, `<html><head><meta http-equiv="refresh" content="0;url=/home"></head></html>`)
 
 }

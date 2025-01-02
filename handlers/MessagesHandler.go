@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"RTF/DB"
+	"RTF/utils"
 	"database/sql"
+	"errors"
 	"log"
 )
 
@@ -52,12 +54,20 @@ const (
 	`
 )
 
-func MessageHandler(db *sql.DB, senderId int, receiverId int, message string) (Msg, error) {
+func MessageHandler(db *sql.DB, senderId int, receiverId int, msg string) (Msg, error) {
 
 	var Message Msg
+
+	if msg == "" {
+		log.Println("Message is empty")
+		return Message, errors.New("MESSAGES IS EMPTY")
+	}
+
+	message := utils.InputSanitizer(msg)
+
 	if senderId == 0 || receiverId == 0 {
 		log.Println("Invalid userID provided")
-		return Message, nil
+		return Message, errors.New("ID IS EMPTY")
 	}
 
 	MessageID, err := DB.InsertMessage(senderId, receiverId, message)

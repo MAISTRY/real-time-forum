@@ -1,6 +1,6 @@
 package handlers
 
-import ( 
+import (
 	"RTF/utils"
 	"database/sql"
 	"fmt"
@@ -181,13 +181,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Redirect the user after login
-	w.Header().Set("HX-Redirect", "/home")
-	w.WriteHeader(http.StatusOK)
+	// w.Header().Set("HX-Redirect", "/home")
+	// w.WriteHeader(http.StatusOK)
 
 	// ! END: CHECK if user have another session
 	//https://community.auth0.com/t/how-to-log-user-out-after-cookie-expiration-in-go/151913
 	w.Write([]byte("Login successful"))
 
-	w.Header().Set("HX-Redirect", "/")
-	fmt.Fprintf(w, `<html><head><meta http-equiv="refresh" content="0;url=/home"></head></html>`)
+	// w.Header().Set("HX-Redirect", "/")
+	// fmt.Fprintf(w, `<html><head><meta http-equiv="refresh" content="0;url=/home"></head></html>`)
 }
