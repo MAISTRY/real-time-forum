@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
         usersidebar.classList.toggle('collapsed', isCollapsed);
     }
 
-    const menu = document.querySelector(".menu");
     const menuItems = document.querySelectorAll('.menu-item');
 
     menuItems.forEach(item => {

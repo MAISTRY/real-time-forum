@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -53,6 +54,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	username := r.FormValue("newUsername")
+	username = strings.ToLower(username)
+	log.Printf("username: %v", username)
 	firstNmae := r.FormValue("fistName")
 	lastName := r.FormValue("lastName")
 	email := r.FormValue("Email")

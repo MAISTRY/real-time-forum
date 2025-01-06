@@ -212,7 +212,7 @@
                     <div class="form-header">
                     <h2>Create new post</h2>
                     </div>
-                    <form id="postForm" hx-post="/Data-CreatPost" hx-target="#CreatePost_err_field" hx-swap="innerHTML" enctype="multipart/form-data">
+                    <form id="postForm" enctype="multipart/form-data">
                         <div class="form-post horizontal-multi-select">
                             <p class="textlabel">Select one or more Category:</p>
                             <div class="multi-select-options" id="categories">
@@ -334,14 +334,15 @@
         </div>
 
     </div>
-    <script src="../scripts/Page.js"></script>
-    <script src="../scripts/navigation.js"></script>
-    <script src="../scripts/utilities.js"></script>
-    <script src="../scripts/fetchPosts.js"></script>
+    <script src="../scripts/fetchUserInteraction.js"></script>
     <script src="../scripts/fetchComments.js"></script>
     <script src="../scripts/fetchCategory.js"></script>
     <script src="../scripts/fetchProfile.js"></script>
+    <script src="../scripts/navigation.js"></script>
+    <script src="../scripts/fetchPosts.js"></script>
+    <script src="../scripts/utilities.js"></script>
     <script src="../scripts/WebSocket.js"></script>
-    <script src="../scripts/fetchUserInteraction.js"></script>
+    <script src="../scripts/Messages.js"></script>
+    <script src="../scripts/Page.js"></script>
 </body>
 </html>

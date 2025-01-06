@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"RTF/DB"
 	"database/sql"
 	"fmt"
-	"RTF/DB"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 )
 
@@ -40,14 +41,8 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	userID, err := DB.GetUserIDByCookie(r, db)
-	if err != nil {
-		http.Error(w, `{"success": false, "message": "Error getting user ID"}`, http.StatusInternalServerError)
-		return
-	}
-
-	title := (r.FormValue("title"))
-	content := (r.FormValue("content"))
+	title := r.FormValue("title")
+	content := r.FormValue("content")
 	categoriesFromForm := r.Form["categories"]
 
 	if title == "" {
@@ -70,34 +65,41 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if file != nil {
 		filename := filepath.Base(fileHead.Filename)
-		storePath := filepath.Join(uploadDir, filename)
-		imagePath = filepath.Join(dataDir, filename)
+		filename = regexp.MustCompile(`[^a-zA-Z0-9\._-]`).ReplaceAllString(filename, "_")
+		storePath := ""
 
-		i := 1
-		for _, err := os.Stat(storePath); err == nil; i++ {
+		i := 0
+		for {
 			storePath = filepath.Join(uploadDir, fmt.Sprintf("%d_%s", i, filename))
-			imagePath = filepath.Join(imagePath, fmt.Sprintf("%d_%s", i, filename))
+			if _, err := os.Stat(storePath); os.IsNotExist(err) {
+				break
+			}
+			i++
 		}
+		imagePath = filepath.Join(dataDir, fmt.Sprintf("%d_%s", i, filename))
 
-		filePlace, err := os.Create(storePath)
+		// fmt.Printf("storePath: %s\n", storePath)
+		// fmt.Printf("imagePath: %s\n", imagePath)
+
+		outFile, err := os.Create(storePath)
 		if err != nil {
 			http.Error(w, `{"success": false, "message": "Error saving image"}`, http.StatusInternalServerError)
 			return
 		}
-		defer filePlace.Close()
+		defer outFile.Close()
 
-		_, err = file.Seek(0, 0)
+		_, err = io.Copy(outFile, file)
 		if err != nil {
-			http.Error(w, `{"success": false, "message": "Error reading file"}`, http.StatusInternalServerError)
+			http.Error(w, `{"success": false, "message": "Error writing image"}`, http.StatusInternalServerError)
 			return
 		}
 
-		_, err = io.Copy(filePlace, file)
-		if err != nil {
-			http.Error(w, `{"success": false, "message": "Error writing file"}`, http.StatusInternalServerError)
-			return
-		}
+	}
 
+	userID, err := DB.GetUserIDByCookie(r, db)
+	if err != nil {
+		http.Error(w, `{"success": false, "message": "Error getting user ID"}`, http.StatusInternalServerError)
+		return
 	}
 
 	UsrID, err := strconv.Atoi(userID)
@@ -132,9 +134,9 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	// 	}
 	// }
 
-	w.Write([]byte(`Post created successfully`))
+	w.Write([]byte(`Post Created Successfully`))
 
-	w.Header().Set("HX-Redirect", "/")
-	fmt.Fprintf(w, `<html><head><meta http-equiv="refresh" content="0;url=/home"></head></html>`)
+	// w.Header().Set("HX-Redirect", "/")
+	// fmt.Fprintf(w, `<html><head><meta http-equiv="refresh" content="0;url=/home"></head></html>`)
 
 }

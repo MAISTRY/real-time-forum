@@ -86,6 +86,12 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		switch WebMsg.Type {
+		case "logout":
+			log.Printf("User %v logged out\n", intUserID)
+			syncronize.Lock()
+			delete(clients, intUserID)
+			syncronize.Unlock()
+			handlers.BroadcastUserList(db, &syncronize, clients)
 		case "GetMessages":
 			messages, err := handlers.ShowAllMessages(db, intUserID, WebMsg.SecondUser)
 			if err != nil {

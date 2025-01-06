@@ -38,7 +38,6 @@ func Routes() http.Handler {
 	router.HandleFunc("/Data-userLogout", handlers.LogoutHandler)
 	router.HandleFunc("/Data-userRegister", handlers.RegisterHandler)
 
-	// ! START Google and Github auth
 	router.HandleFunc("/auth/google/login", auth.HandleGoogleLogin)
 	router.HandleFunc("/auth/github/login", auth.HandleGitHubLogin)
 	router.HandleFunc("/auth/google/callback", func(w http.ResponseWriter, r *http.Request) {
@@ -47,14 +46,12 @@ func Routes() http.Handler {
 		r.URL.RawQuery = q.Encode()
 		auth.HandleOAuthCallback(w, r)
 	})
-
 	router.HandleFunc("/auth/github/callback", func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 		q.Add("provider", "github")
 		r.URL.RawQuery = q.Encode()
 		auth.HandleOAuthCallback(w, r)
 	})
-	// ! END Google and Github auth
 
 	router.HandleFunc("/Data-Post", handlers.PostHandler)
 	router.HandleFunc("/Data-PostLike", handlers.PostLikeHandler)
@@ -69,9 +66,6 @@ func Routes() http.Handler {
 
 	router.HandleFunc("/Data-Profile", handlers.ProfileHandler)
 	router.HandleFunc("/Data-Categories", handlers.CategoriesHandler)
-
-	// router.HandleFunc("/Data-Users", middleware.UsersHandler)
-	// router.HandleFunc("/Data-Message", middleware.ShowAllMessages)
 
 	// ! for testing
 	router.HandleFunc("/test", handlers.NotificaionHandler)

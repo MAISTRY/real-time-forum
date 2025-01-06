@@ -2,6 +2,7 @@ function loadUserState() {
     const loginForm = document.getElementById('loginForm');
     const logoutForm = document.getElementById('logoutForm');
     const RegisterForm = document.getElementById('RegisterForm');
+    const CreateForm = document.getElementById('postForm');
 
     loginForm.addEventListener('submit', function(event) {
         event.preventDefault();
@@ -38,11 +39,13 @@ function loadUserState() {
         .then(result => {
             if (result === 'Logout successful') {
                 Authenticated();
+                sendWebSocketMessage({type: 'logout'});
                 navigateToPage('Login')
             }
         })
         .catch(error => {
             console.error('Error:', error);
+            navigateToPage('Error');
         });
     }
 
@@ -67,6 +70,32 @@ function loadUserState() {
         })
         .catch(error => {
             console.error('Error:', error);
+            navigateToPage('Error');
         });
+    });
+
+    CreateForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+    
+        const formData = new FormData(this);        
+        fetch('/Data-CreatPost', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.text())
+        .then(result => {
+            if (result === 'Post Created Successfully') {
+                const menuItems = document.querySelectorAll('.menu-item');
+                menuItems.forEach(i => i.classList.remove('color'));    
+                navigateToPage('Home')
+            } else {
+                document.getElementById('CreatePost_err_field').innerHTML = result;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            navigateToPage('Error');
+        });
+        this.reset();
     });
 }

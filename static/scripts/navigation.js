@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function navigateToPage(pageId) {
         if (validPages.includes(pageId)) {
-            const path = `/${pageId.toLowerCase()}`;
+            const path = pageId === 'Home' ? '/' : `/${pageId.toLowerCase()}`;
             history.pushState({}, '', path);
             showPage(pageId);
             localStorage.setItem('currentPage', pageId);
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getValidPageId(path) {
-        const pageId = path.charAt(0).toUpperCase() + path.slice(1);
+        const pageId = path === '' ? 'Home' : path.charAt(0).toUpperCase() + path.slice(1);
         return validPages.includes(pageId) ? pageId : null;
     }
 });
