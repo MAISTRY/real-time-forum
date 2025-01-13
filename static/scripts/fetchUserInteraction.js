@@ -19,6 +19,7 @@ function loadUserState() {
             if (result === 'Login successful') {
                 Authenticated();
                 navigateToPage('Home')
+                this.reset();
             } else {
                 document.getElementById('login_err_field').innerHTML = result;
             }
@@ -54,7 +55,7 @@ function loadUserState() {
     
         const formData = new FormData(this);
         const data = new URLSearchParams(formData);
-    
+
         fetch('/Data-userRegister', {
             method: 'POST',
             body: data,
@@ -63,15 +64,17 @@ function loadUserState() {
         .then(result => {
             if (result === 'Registration successful') {
                 Authenticated();
+                this.reset();
                 navigateToPage('Home')
             } else {
-                document.getElementById('login_err_field').innerHTML = result;
+                document.getElementById('register_err_field').innerHTML = result;
             }
         })
         .catch(error => {
             console.error('Error:', error);
             navigateToPage('Error');
         });
+        
     });
 
     CreateForm.addEventListener('submit', function(event) {
@@ -88,6 +91,7 @@ function loadUserState() {
                 const menuItems = document.querySelectorAll('.menu-item');
                 menuItems.forEach(i => i.classList.remove('color'));    
                 navigateToPage('Home')
+                this.reset();
             } else {
                 document.getElementById('CreatePost_err_field').innerHTML = result;
             }
@@ -96,6 +100,5 @@ function loadUserState() {
             console.error('Error:', error);
             navigateToPage('Error');
         });
-        this.reset();
     });
 }
