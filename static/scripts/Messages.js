@@ -17,12 +17,12 @@ function GetMessages(messages, Sender, Receiver, ReceiverID) {
     ChatName.className = 'chat-name';
     ChatName.textContent = Receiver;
     
-    const TypingStatus = document.createElement('div');
-    TypingStatus.className = 'Typing';
-    TypingStatus.id = `TypingStatus-${ReceiverID}`;
+    // const TypingStatus = document.createElement('div');
+    // TypingStatus.className = 'Typing';
+    // TypingStatus.id = `TypingStatus-${ReceiverID}`;
 
     HeaderParts.appendChild(ChatName);
-    HeaderParts.appendChild(TypingStatus);
+    // HeaderParts.appendChild(TypingStatus);
     ChatHeader.appendChild(Chatimage);
     ChatHeader.appendChild(HeaderParts);
 
@@ -98,6 +98,20 @@ function GetMessages(messages, Sender, Receiver, ReceiverID) {
         loadMoreMessages(ChunkNumber);
     }
 
+    const ChatTyping = document.createElement('div');
+    ChatTyping.className = 'message received typing-indicator'
+
+    const Dot1 = document.createElement('span');
+    Dot1.className = 'dot';
+    const Dot2 = document.createElement('span');
+    Dot2.className = 'dot';
+    const Dot3 = document.createElement('span');
+    Dot3.className = 'dot';
+    
+    ChatTyping.appendChild(Dot1);
+    ChatTyping.appendChild(Dot2);
+    ChatTyping.appendChild(Dot3);
+
     const ChatFooter = document.createElement('div');
     ChatFooter.className = 'input-area';
     
@@ -133,6 +147,7 @@ function GetMessages(messages, Sender, Receiver, ReceiverID) {
 
     fragments.appendChild(ChatHeader);
     fragments.appendChild(ChatBody);
+    fragments.appendChild(ChatTyping);
     fragments.appendChild(ChatFooter);
 
     MessagesContainer.innerHTML = '';
