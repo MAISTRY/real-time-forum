@@ -2,8 +2,13 @@ function StartWebSocket() {
 
     if (window["WebSocket"]) {
         // Connect to websocket
-        socket = new WebSocket("wss://" + document.location.host + "/ws");
-        console.log("supports websockets")
+        try {
+            socket = new WebSocket("wss://" + document.location.host + "/ws");
+            console.log("supports websockets")
+    
+        } catch (error) {
+            console.log("no error")
+        }
         
         socket.onopen = () => {
             console.log("Connection open ...");

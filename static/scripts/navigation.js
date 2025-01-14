@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('currentPage', pageId);
         } else {
             if (isAuthenticated) {
-                console.error(`Invalid page ID: ${pageId}`);
+                // console.error(`Invalid page ID: ${pageId}`);
                 showPage('Error');
             } else {
                 showPage('Login');
