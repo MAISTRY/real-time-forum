@@ -5,9 +5,7 @@ function StartWebSocket() {
         socket = new WebSocket("wss://" + document.location.host + "/ws");
         console.log("supports websockets")
         
-
         socket.onopen = () => {
-            sendWebSocketMessage({type: 'Authentication'});
             console.log("Connection open ...");
         }
 
@@ -19,14 +17,17 @@ function StartWebSocket() {
                     Authenticated(data);
                     break;
                 case 'loadUsersResponse':
-                    loadUsers(data.users);
+                    loadUsers(data.users, false);
+                    break;
+                case 'loadUsrAfterResponse':
+                    loadUsers(data.users, true);
                     break;
                 case 'getMessages':
                     GetMessages(data.messages, data.Sender, data.Receiver, data.ReceiverID);
                     break;
                 case 'SendMessage':
                     AddMessage(data.messages, data.Sender);
-                    sendWebSocketMessage({type: 'loadUsers'}); // Corrected message type
+                    sendWebSocketMessage({type: 'loadUsrAfterMsg', firstUser: data.Sender, secondUser: data.ReceiverID}); // Corrected message type
                     break;
                 case 'Offline':
                     alert('User offline');
@@ -38,7 +39,6 @@ function StartWebSocket() {
         }
 
         socket.onclose = () => {
-            sendWebSocketMessage({type: 'Authentication'});
             console.log("Connection closed");
         }
 
@@ -73,7 +73,7 @@ function notification(SenderID, Message, Sender) {
     }
 }
 
-function loadUsers(Users) {
+function loadUsers(Users, newMessage) {
     const UsersContainer = document.getElementById('users-list');
     
     // Keep track of existing user IDs, this will be empty when reloading
@@ -148,7 +148,11 @@ function loadUsers(Users) {
             const menuItems = document.querySelectorAll('.menu-item');
             menuItems.forEach(i => i.classList.remove('color'));
         });
-
+        
+        //* ths shit fuck all my hard work to let the userlist not refresh 
+        if (newMessage === true) {
+            UsersContainer.appendChild(userItem);
+        }
         // Remove from existing map since we've processed this user
         existingUserItems.delete(userId);
     });
@@ -156,4 +160,3 @@ function loadUsers(Users) {
     // Remove user items that are no longer in the new user list
     existingUserItems.forEach(item => item.remove());
 }
-

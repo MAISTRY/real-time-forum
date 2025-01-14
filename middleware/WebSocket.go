@@ -154,8 +154,28 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 					log.Printf("Error Sending message %v\n", err)
 				}
 			}
-		case "loadUsers":
-			handlers.BroadcastUserList(db, &syncronize, clients)
+		case "loadUsrAfterMsg":
+
+			for user, conn := range clients {
+
+				if user == WebMsg.FirstUser || user == WebMsg.SecondUser {
+					users, err := handlers.GetUsers(db, user, clients)
+					if err != nil {
+						log.Printf("Error getting users %v\n", err)
+						continue
+					}
+					if err := conn.WriteJSON(map[string]interface{}{
+						"type":  "loadUsrAfterResponse",
+						"users": users,
+					}); err != nil {
+						log.Printf("Error broadcasting user list %v\n", err)
+						conn.Close()
+						delete(clients, user)
+					}
+				}
+			}
+			// case "loadUsers":
+			// 	handlers.BroadcastUserList(db, &syncronize, clients)
 		}
 	}
 

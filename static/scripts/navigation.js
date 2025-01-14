@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const validPages = ['Home', 'Error', 'Categories'];
+    const validPages = ['Error'];
     let isAuthenticated = false;
 
     loadUserState();
@@ -33,10 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     mainContent.classList.remove('RightBar');
                     RightBar.classList.remove('deactive');
-
-                    addValidPages(['Createpost','Profile','Created','Liked','Disliked','Messages']);
-                    StartWebSocket();
                     
+                    removeValidPages(['Login', 'Register']);
+                    addValidPages(['Home', 'Categories', 'Createpost', 'Profile', 'Created', 'Liked', 'Disliked', 'Messages']);
+                    StartWebSocket();
+
+                    navigateToPage('Home');
                     // if (data.privilege === 1){} else if (data.privilege === 2) {} else if (data.privilege === 3) {}
                 } else {
                     isAuthenticated = false;
@@ -45,15 +47,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     privilage.forEach(section => section.classList.add('disabled-link'));
                     
                     addValidPages(['Login', 'Register']);
+                    removeValidPages(['Home', 'Categories', 'Createpost', 'Profile', 'Created', 'Liked', 'Disliked', 'Messages']);
+
                     mainContent.classList.add('RightBar');
                     RightBar.classList.add('deactive');
+                    navigateToPage('Login');
                 }
 
                 handleInitialPageLoad();
         })
         .catch(error => {
             console.error("Error checking auth status:", error)
-            navigateToPage('Error');
         });
 
     }
@@ -90,9 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             if (isAuthenticated) {
                 console.error(`Invalid page ID: ${pageId}`);
-                navigateToPage('Error');
+                showPage('Error');
             } else {
-                navigateToPage('Login');
+                showPage('Login');
             }
         }
     }
@@ -123,6 +127,15 @@ document.addEventListener('DOMContentLoaded', () => {
         pages.forEach(page => {
             if (!validPages.includes(page)) {
                 validPages.push(page);
+            }
+        });
+    }
+
+    function removeValidPages(pages) {
+        pages.forEach(page => {
+            const index = validPages.indexOf(page);
+            if (index !== -1) {
+                validPages.splice(index, 1);
             }
         });
     }

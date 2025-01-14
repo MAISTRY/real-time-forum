@@ -47,7 +47,7 @@ func BroadcastUserList(db *sql.DB, syncronize *sync.Mutex, clients map[int]*webs
 	defer syncronize.Unlock()
 
 	for user, conn := range clients {
-		users, err := getUsers(db, user, clients)
+		users, err := GetUsers(db, user, clients)
 		if err != nil {
 			log.Printf("Error getting users %v\n", err)
 			continue
@@ -63,7 +63,7 @@ func BroadcastUserList(db *sql.DB, syncronize *sync.Mutex, clients map[int]*webs
 		}
 	}
 }
-func getUsers(db *sql.DB, userID int, clients map[int]*websocket.Conn) ([]UserStatus, error) {
+func GetUsers(db *sql.DB, userID int, clients map[int]*websocket.Conn) ([]UserStatus, error) {
 
 	if userID == 0 {
 		log.Println("No userID provided")
