@@ -50,28 +50,28 @@ function loadProfileData() {
                 postElement.id = 'Profile-' + post.PostID;
                 postElement.className = 'post-card';
 
-                // Categories Section
-                const postCategoryContainer = document.createElement('div');
-                postCategoryContainer.className = 'post-category';
+                // // Categories Section
+                // const postCategoryContainer = document.createElement('div');
+                // postCategoryContainer.className = 'post-category';
     
-                const categorySpan = document.createElement('span');
-                categorySpan.className = 'text-category';
-                categorySpan.textContent = 'Categories:';
-                postCategoryContainer.appendChild(categorySpan);
+                // const categorySpan = document.createElement('span');
+                // categorySpan.className = 'text-category';
+                // categorySpan.textContent = 'Categories:';
+                // postCategoryContainer.appendChild(categorySpan);
     
-                if (post.Categories && post.Categories.length > 0) {
-                    post.Categories.forEach(CTG => {
-                        const categoryElement = document.createElement('a');
-                        categoryElement.textContent = CTG;
-                        postCategoryContainer.appendChild(categoryElement);
-                    });
-                } else {
-                    const noCategoryMessage = document.createElement('span');
-                    noCategoryMessage.textContent = ' None';
-                    postCategoryContainer.appendChild(noCategoryMessage);
-                }
+                // if (post.Categories && post.Categories.length > 0) {
+                //     post.Categories.forEach(CTG => {
+                //         const categoryElement = document.createElement('a');
+                //         categoryElement.textContent = CTG;
+                //         postCategoryContainer.appendChild(categoryElement);
+                //     });
+                // } else {
+                //     const noCategoryMessage = document.createElement('span');
+                //     noCategoryMessage.textContent = ' None';
+                //     postCategoryContainer.appendChild(noCategoryMessage);
+                // }
     
-                postElement.insertBefore(postCategoryContainer, postElement.firstChild);
+                // postElement.insertBefore(postCategoryContainer, postElement.firstChild);
                 
     
                 // Post Header

@@ -32,6 +32,12 @@ function loadPosts() {
             return response.json();
         })
         .then(posts => {
+
+            if (posts === null) {
+                container.innerHTML = '<p style="text-align: center">No posts found.</p>';
+                return;
+            }
+            
             const fragment = document.createDocumentFragment();
             
             posts.forEach(post => {

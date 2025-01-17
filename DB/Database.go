@@ -8,14 +8,6 @@ import (
 )
 
 const (
-	/*
-		// TODO: Add more tables and relationships as needed for the main and optional projects.
-		TODO: Ensure to use proper data types, constraints, and indexes where appropriate.
-		// TODO: Use FKs in all the tables and enforce the Refrential integrity(PRAGMA).
-		// TODO: insert cookies table in the ERD and it relations with the rest of the tables.
-		! for @musabt: review the code for any improvements.
-	*/
-
 	enforcementOfFKs = `PRAGMA FOREIGN_KEYS = 1;`
 
 	CreateUserTableQuery = `CREATE TABLE IF NOT EXISTS User(
@@ -124,12 +116,43 @@ const (
 		ip_address TEXT,
 		FOREIGN KEY (user_id) REFERENCES User(UserID) ON DELETE CASCADE
 	);`
-
-	// // ------------------------------------------------------------ // //
-
-	// ! WE WERE IDIOTS THINKING THAT WE GOTTA DO IT THIS WAY 👇💀💀
-	// TODO: to store the cookies in a map instead of storing them in the database.
 )
+
+func InsertDefaultUsers(db *sql.DB) {
+	defaultUsers := []struct {
+		username, firstname, lastname, email, password, gender string
+		privilege                                              int
+	}{
+		{"admin", "Admin", "User", "admin@gmail.com", "$2a$10$2COY2pQOxsPFA6.LrOsoj.0b7cEOmiD2q4pmHgdUI3Wf1fTBX5L86", "M", 3},       // * password: adminadmin
+		{"maistry", "Mujtaba", "User", "mujtaba@gmail.com", "$2a$10$SsAxMwWXMMbfT9ziRrpTU.2datBjmkVIoQKMj7.PLkh3daKSyg0sO", "M", 2}, // * password: mujtaba123
+		{"meow", "Mahmood", "User", "mahmood@gmail.com", "$2a$10$XDHVr9yLMQbdZ72S0Nig/e71zh8nYy1.FnY82kP4Ng16wAppryx4m", "M", 2},    // * password: mahmood123
+	}
+
+	for _, user := range defaultUsers {
+		_, err := db.Exec(`INSERT INTO User (username, firstname, lastname, email, password, gender, privilege) 
+			SELECT ?, ?, ?, ?, ?, ?, ? 
+			WHERE NOT EXISTS (SELECT 1 FROM User WHERE username = ?)`,
+			user.username, user.firstname, user.lastname, user.email, user.password, user.gender, user.privilege, user.username)
+		if err != nil {
+			log.Printf("error inserting user %s: %v", user.username, err)
+		}
+	}
+	log.Println("Users Inserted successfully...")
+}
+func InsertDefaultCategories(db *sql.DB) {
+
+	var predefinedCategories = []string{"Technology", "Education", "Entertainment", "Travel", "Cars", "Sports", "Lifestyle", "Science", "Business"}
+	for _, category := range predefinedCategories {
+		_, err := db.Exec(`INSERT INTO Category (title, description, UserID) 
+			SELECT ?, ?, ? 
+			WHERE NOT EXISTS (SELECT 1 FROM Category WHERE title = ?)`,
+			category, category+" description", 1, category)
+		if err != nil {
+			log.Printf("error inserting category %s: %v", category, err)
+		}
+	}
+	log.Println("Categorys Inserted successfully...")
+}
 
 // InitDB initializes the database connection, creates the necessary tables, and performs any initial table filling.
 // It opens a new SQLite database connection, checks the connection, and then calls the CreateTables function to create the required tables.
@@ -146,9 +169,9 @@ func InitDB() {
 		log.Fatalf("error connecting to the database: %v", err)
 	}
 
-	// * DONE
 	CreateTables(db)
-	// InitailTableFiller(db)
+	InsertDefaultUsers(db)
+	InsertDefaultCategories(db)
 }
 
 // CreateTables creates the necessary tables in the database.

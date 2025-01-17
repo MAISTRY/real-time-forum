@@ -103,6 +103,11 @@ function notification(SenderID, Message, Sender) {
 
 function loadUsers(Users, newMessage) {
     const UsersContainer = document.getElementById('users-list');
+
+    if (Users === null) {
+        console.log('No User found');
+        return
+    }
     
     // Keep track of existing user IDs, this will be empty when reloading
     const existingUserItems = new Map();

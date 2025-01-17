@@ -33,6 +33,12 @@ function loadCategories() {
         return response.json();
     })
     .then(categories => {
+
+        if (categories === null) {
+            postsContainer.innerHTML = '<p style="text-align: center">No posts found.</p>';
+            return;
+        }
+
         const fragment = document.createDocumentFragment();
         categoryNav.innerHTML = '';
 
