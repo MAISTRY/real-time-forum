@@ -12,7 +12,7 @@ function StartWebSocket() {
         
         socket.onopen = () => {
             console.log("Connection open ...");
-        }
+        };
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -31,9 +31,13 @@ function StartWebSocket() {
                     GetMessages(data.messages, data.Sender, data.Receiver, data.ReceiverID);
                     break;
                 case 'SendMessage':
-                    AddMessage(data.messages, data.Sender);
-                    sendWebSocketMessage({type: 'loadUsrAfterMsg', firstUser: data.Sender, secondUser: data.ReceiverID}); // Corrected message type
+                    AddMessage(data.messages, data.Sender, data.ReceiverID);
+                    sendWebSocketMessage({type: 'loadUsrAfterMsg', firstUser: data.Sender, secondUser: data.ReceiverID}); 
                     break;
+                case 'IsTyping':
+                    Typing(data.Sender, data.isTyping);
+                    break;
+                
                 case 'Offline':
                     alert('User offline');
                     break;
@@ -41,17 +45,36 @@ function StartWebSocket() {
                     console.error('Invalid data type');
                     break;
             }
-        }
+        };
 
         socket.onclose = () => {
             console.log("Connection closed");
-        }
+        };
 
         socket.onerror = function(event) {
             console.log("Error occurred: " + event.data);
-        }
+        };
     } else {
         alert("Not supporting websockets");
+    }
+}
+
+function Typing(Sender,isTyping) {
+    const MessagesContainer = document.getElementById('chat-area');
+    const ChatBody = document.getElementById('messages');
+    const isSender = MessagesContainer.classList.contains(Sender);
+    if (!isSender) {
+        return;
+    } 
+    const ChatTyping = document.getElementById('Typing');
+    if (isTyping) {
+        ChatTyping.classList.remove('Typing');
+        ChatBody.scrollTo({
+            top: ChatBody.scrollHeight,
+            behavior: 'smooth',
+        });
+    } else {
+        ChatTyping.classList.add('Typing');
     }
 }
 

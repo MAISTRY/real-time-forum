@@ -14,11 +14,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// *need to be in the websocket
-// netifications
-// chat
-// status
-
 var (
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
@@ -32,6 +27,7 @@ var (
 type (
 	WebSocketMessage struct {
 		Type       string    `json:"type"`
+		IsTyping   bool      `json:"isTyping,omitempty"`
 		Receiver   string    `json:"receiver,omitempty"`
 		Message    string    `json:"message,omitempty"`
 		FirstUser  int       `json:"firstUser,omitempty"`
@@ -174,8 +170,22 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			// case "loadUsers":
-			// 	handlers.BroadcastUserList(db, &syncronize, clients)
+		case "Typing":
+
+			for user, conn := range clients {
+
+				if user == WebMsg.SecondUser {
+
+					if err := conn.WriteJSON(map[string]interface{}{
+						"type":       "IsTyping",
+						"isTyping":   WebMsg.IsTyping,
+						"Sender":     WebMsg.FirstUser,
+						"ReceiverID": WebMsg.SecondUser,
+					}); err != nil {
+						log.Printf("Error Sending message %v\n", err)
+					}
+				}
+			}
 		}
 	}
 

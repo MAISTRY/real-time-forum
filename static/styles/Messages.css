@@ -188,6 +188,10 @@
     padding: 0;
 }
 
+.Typing {
+    display: none;
+}
+
 @keyframes blink {
     0%, 80%, 100% {
         opacity: 0;

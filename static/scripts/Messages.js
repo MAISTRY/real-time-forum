@@ -1,6 +1,7 @@
 function GetMessages(messages, Sender, Receiver, ReceiverID) {
 
     const MessagesContainer = document.getElementById('chat-area');
+    MessagesContainer.classList = ReceiverID + ' chat-area ' + Sender;
     MessagesContainer.innerHTML = '<p style="text-align: center">Loading Messages...</p>';
 
     const fragments = document.createDocumentFragment();
@@ -16,13 +17,8 @@ function GetMessages(messages, Sender, Receiver, ReceiverID) {
     const ChatName = document.createElement('div');
     ChatName.className = 'chat-name';
     ChatName.textContent = Receiver;
-    
-    // const TypingStatus = document.createElement('div');
-    // TypingStatus.className = 'Typing';
-    // TypingStatus.id = `TypingStatus-${ReceiverID}`;
 
     HeaderParts.appendChild(ChatName);
-    // HeaderParts.appendChild(TypingStatus);
     ChatHeader.appendChild(Chatimage);
     ChatHeader.appendChild(HeaderParts);
 
@@ -99,7 +95,8 @@ function GetMessages(messages, Sender, Receiver, ReceiverID) {
     }
 
     const ChatTyping = document.createElement('div');
-    ChatTyping.className = 'message received typing-indicator'
+    ChatTyping.className = 'message received typing-indicator Typing';
+    ChatTyping.id = 'Typing';
 
     const Dot1 = document.createElement('span');
     Dot1.className = 'dot';
@@ -124,11 +121,15 @@ function GetMessages(messages, Sender, Receiver, ReceiverID) {
     sendButton.className ='send-button';
     sendButton.textContent = 'Send';
 
+    let typingTimeout;
+
     sendButton.addEventListener('click', () => {
         const message = inputArea.value;
         if (message.trim()!== '') {
             sendWebSocketMessage({type: 'SendMessage', message: message, secondUser: ReceiverID, Receiver: Receiver});
             inputArea.value = '';
+            sendTypingStatus(false);
+            clearTimeout(typingTimeout);
         }
     });
 
@@ -138,9 +139,23 @@ function GetMessages(messages, Sender, Receiver, ReceiverID) {
             if (message.trim() !== '') {
                 sendWebSocketMessage({type: 'SendMessage', message: message, secondUser: ReceiverID, Receiver: Receiver});
                 inputArea.value = '';
+                sendTypingStatus(false);
+                clearTimeout(typingTimeout);
             }
         }
     });
+
+    inputArea.addEventListener('input', () => {
+        if (inputArea.value.trim() !== '') {
+            sendTypingStatus(true);
+        }
+        clearInterval(typingTimeout);
+        typingTimeout = setTimeout(() => { sendTypingStatus(false) }, 5000);
+    });
+
+    function sendTypingStatus(isTyping) {
+        sendWebSocketMessage({type: 'Typing', isTyping: isTyping, SecondUser: ReceiverID, FirstUser: Sender});
+    }
 
     ChatFooter.appendChild(inputArea);
     ChatFooter.appendChild(sendButton);
@@ -161,7 +176,13 @@ function GetMessages(messages, Sender, Receiver, ReceiverID) {
 }
 
 window.AddMessage = AddMessage;
-function AddMessage(message, Sender) {
+function AddMessage(message, Sender, ReceiverID) {
+
+    const MessagesContainer = document.getElementById('chat-area');
+    const isReceiverID = MessagesContainer.classList.contains(ReceiverID);
+    if (!isReceiverID) {
+        return;
+    }
 
     const ChatBody = document.getElementById('messages');
 
