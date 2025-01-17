@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"RTF/DB"
 	"RTF/utils"
 	"database/sql"
 	"log"
@@ -34,6 +35,17 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusMethodNotAllowed)
+		return
+	}
+
+	UserID, err := DB.GetUserIDByCookie(r, db)
+	if err != nil {
+		log.Printf("The Error getting user ID %v\n", err)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	if UserID != "" {
+		http.Error(w, "Already logged in", http.StatusOK)
 		return
 	}
 

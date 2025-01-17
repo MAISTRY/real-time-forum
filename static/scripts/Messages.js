@@ -180,9 +180,6 @@ function AddMessage(message, Sender, ReceiverID) {
 
     const MessagesContainer = document.getElementById('chat-area');
     const isReceiverID = MessagesContainer.classList.contains(ReceiverID);
-    if (!isReceiverID) {
-        return;
-    }
 
     const ChatBody = document.getElementById('messages');
 
@@ -190,13 +187,12 @@ function AddMessage(message, Sender, ReceiverID) {
     if (message.FirstUser === Sender) {
         messageItem.className = 'message sent'; 
     } else {
-        messageItem.className = 'message received';
-
-        if (document.visibilityState === 'hidden') {
+        if (document.visibilityState === 'hidden' || !isReceiverID) {
             console.log('User is not viewing the page.');
             notification(message.FirstUser, message.message, message.Sender);
+            return;
         } 
-
+        messageItem.className = 'message received';
     }
 
     const messageSender = document.createElement('div');

@@ -118,6 +118,8 @@ const (
 	);`
 )
 
+var predefinedCategories = []string{"Technology", "Education", "Entertainment", "Travel", "Cars", "Sports", "Lifestyle", "Science", "Business"}
+
 func InsertDefaultUsers(db *sql.DB) {
 	defaultUsers := []struct {
 		username, firstname, lastname, email, password, gender string
@@ -141,7 +143,6 @@ func InsertDefaultUsers(db *sql.DB) {
 }
 func InsertDefaultCategories(db *sql.DB) {
 
-	var predefinedCategories = []string{"Technology", "Education", "Entertainment", "Travel", "Cars", "Sports", "Lifestyle", "Science", "Business"}
 	for _, category := range predefinedCategories {
 		_, err := db.Exec(`INSERT INTO Category (title, description, UserID) 
 			SELECT ?, ?, ? 
@@ -154,30 +155,48 @@ func InsertDefaultCategories(db *sql.DB) {
 	log.Println("Categorys Inserted successfully...")
 }
 
-// InitDB initializes the database connection, creates the necessary tables, and performs any initial table filling.
-// It opens a new SQLite database connection, checks the connection, and then calls the CreateTables function to create the required tables.
-// If any errors occur during the database initialization or table creation, it logs a fatal error.
-func InitDB() {
-	db, err := sql.Open("sqlite3", "./meow.db")
-	if err != nil {
-		log.Fatalf("error creating database: %v", err)
-	}
-	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		log.Fatalf("error connecting to the database: %v", err)
+func InsertDefaultPosts(db *sql.DB) {
+	defaultPosts := []struct {
+		UserID                    int
+		title, content, ImagePath string
+	}{
+		{1, "Welcome to Penguinity!",
+			`We’re thrilled to have you here at Penguinity,
+			Thank you for being part of Penguinity. 
+			We can’t wait to see what you bring to the table!`,
+			"../uploads/Penguinity.png",
+		},
 	}
 
-	CreateTables(db)
-	InsertDefaultUsers(db)
-	InsertDefaultCategories(db)
+	for _, post := range defaultPosts {
+		_, err := db.Exec(`INSERT INTO Post (UserID, title, content, ImagePath) 
+			SELECT ?, ?, ?, ?
+			WHERE NOT EXISTS (SELECT 1 FROM Post WHERE title = ?)`,
+			post.UserID, post.title, post.content, post.ImagePath, post.title)
+		if err != nil {
+			log.Printf("error inserting post %s: %v", post.title, err)
+		}
+	}
+	for _, category := range predefinedCategories {
+		var categoryID int
+		err := db.QueryRow(`SELECT CategoryID FROM Category WHERE title = ?`, category).Scan(&categoryID)
+		if err != nil {
+			log.Printf("error fetching CategoryID for %s: %v", category, err)
+			continue
+		}
+
+		_, err = db.Exec(`INSERT INTO PostCategory (PostID, CategoryID) 
+			SELECT ?, ?
+			WHERE NOT EXISTS (SELECT 1 FROM PostCategory WHERE PostID = ? AND CategoryID = ?)`,
+			1, categoryID, 1, categoryID)
+		if err != nil {
+			log.Printf("error inserting PostCategory %s: %v", category, err)
+		}
+	}
+
+	log.Println("Posts Inserted successfully...")
 }
 
-// CreateTables creates the necessary tables in the database.
-// It enables foreign key constraints, creates the user, post, category, post_category, comment, like, dislike, and notification tables.
-// If any errors occur during the table creation, it logs a fatal error.
-// Finally, it logs a success message indicating that the tables were created successfully.
 func CreateTables(db *sql.DB) {
 	if _, err := db.Exec(enforcementOfFKs); err != nil {
 		log.Fatalf("error enabling foreign keys: %v", err)
@@ -220,4 +239,22 @@ func CreateTables(db *sql.DB) {
 	}
 
 	log.Println("Tables created successfully...")
+}
+
+func InitDB() {
+	db, err := sql.Open("sqlite3", "./meow.db")
+	if err != nil {
+		log.Fatalf("error creating database: %v", err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		log.Fatalf("error connecting to the database: %v", err)
+	}
+
+	CreateTables(db)
+	InsertDefaultUsers(db)
+	InsertDefaultCategories(db)
+	InsertDefaultPosts(db)
 }
