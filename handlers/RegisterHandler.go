@@ -38,12 +38,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	UserID, err := DB.GetUserIDByCookie(r, db)
-	if err != nil {
-		log.Printf("The Error getting user ID %v\n", err)
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
+	UserID, _ := DB.GetUserIDByCookie(r, db)
 	if UserID != "" {
 		http.Error(w, "Already logged in", http.StatusOK)
 		return
