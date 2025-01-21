@@ -150,7 +150,7 @@ function GetMessages(messages, Sender, Receiver, ReceiverID) {
             sendTypingStatus(true);
         }
         clearInterval(typingTimeout);
-        typingTimeout = setTimeout(() => { sendTypingStatus(false) }, 5000);
+        typingTimeout = setTimeout(() => { sendTypingStatus(false) }, 3000);
     });
 
     function sendTypingStatus(isTyping) {

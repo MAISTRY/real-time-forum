@@ -36,8 +36,7 @@ function StartWebSocket() {
                     break;
                 case 'IsTyping':
                     Typing(data.Sender, data.isTyping);
-                    break;
-                
+                    break;z
                 case 'Offline':
                     alert('User offline');
                     break;

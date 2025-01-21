@@ -18,6 +18,7 @@ const (
 		email TEXT NOT NULL UNIQUE CHECK(email LIKE '%@%.%'),
         password TEXT NOT NULL,
 		gender TEXT NOT NULL CHECK(gender IN ('M', 'F')),
+		age INTEGER NOT NULL CHECK(age >= 18 AND age <= 100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         privilege INTEGER NOT NULL CHECK(privilege >= 1 AND privilege <= 3) DEFAULT 1
 	);`
@@ -123,18 +124,18 @@ var predefinedCategories = []string{"Technology", "Education", "Entertainment", 
 func InsertDefaultUsers(db *sql.DB) {
 	defaultUsers := []struct {
 		username, firstname, lastname, email, password, gender string
-		privilege                                              int
+		age, privilege                                         int
 	}{
-		{"admin", "Admin", "User", "admin@gmail.com", "$2a$10$2COY2pQOxsPFA6.LrOsoj.0b7cEOmiD2q4pmHgdUI3Wf1fTBX5L86", "M", 3},       // * password: adminadmin
-		{"maistry", "Mujtaba", "User", "mujtaba@gmail.com", "$2a$10$SsAxMwWXMMbfT9ziRrpTU.2datBjmkVIoQKMj7.PLkh3daKSyg0sO", "M", 2}, // * password: mujtaba123
-		{"meow", "Mahmood", "User", "mahmood@gmail.com", "$2a$10$XDHVr9yLMQbdZ72S0Nig/e71zh8nYy1.FnY82kP4Ng16wAppryx4m", "M", 2},    // * password: mahmood123
+		{"admin", "Admin", "User", "admin@gmail.com", "$2a$10$2COY2pQOxsPFA6.LrOsoj.0b7cEOmiD2q4pmHgdUI3Wf1fTBX5L86", "M", 21, 3},       // * password: adminadmin
+		{"maistry", "Mujtaba", "User", "mujtaba@gmail.com", "$2a$10$SsAxMwWXMMbfT9ziRrpTU.2datBjmkVIoQKMj7.PLkh3daKSyg0sO", "M", 20, 2}, // * password: mujtaba123
+		{"meow", "Mahmood", "User", "mahmood@gmail.com", "$2a$10$XDHVr9yLMQbdZ72S0Nig/e71zh8nYy1.FnY82kP4Ng16wAppryx4m", "M", 20, 2},    // * password: mahmood123
 	}
 
 	for _, user := range defaultUsers {
-		_, err := db.Exec(`INSERT INTO User (username, firstname, lastname, email, password, gender, privilege) 
+		_, err := db.Exec(`INSERT INTO User (username, firstname, lastname, email, password, gender, age, privilege) 
 			SELECT ?, ?, ?, ?, ?, ?, ? 
 			WHERE NOT EXISTS (SELECT 1 FROM User WHERE username = ?)`,
-			user.username, user.firstname, user.lastname, user.email, user.password, user.gender, user.privilege, user.username)
+			user.username, user.firstname, user.lastname, user.email, user.password, user.gender, user.age, user.privilege, user.username)
 		if err != nil {
 			log.Printf("error inserting user %s: %v", user.username, err)
 		}

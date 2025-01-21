@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 const (
 	GetUserByUnameQuery     = `SELECT UserID FROM User WHERE username = ?;`
 	GetUserByUserEmailQuery = `SELECT UserID FROM User WHERE email = ?;`
-	InsertNewUserQuery      = `INSERT INTO User (username, firstname, lastname, email, password, gender) VALUES (?,?,?,?,?,?);`
+	InsertNewUserQuery      = `INSERT INTO User (username, firstname, lastname, email, password, age, gender) VALUES (?,?,?,?,?,?,?);`
 	insertNewSessionQuery   = `INSERT INTO Session (session_id, user_id, created_at, expiry_date, ip_address) VALUES (?,?,?,?,?)`
 )
 
@@ -69,7 +70,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	psswd := r.FormValue("newPassword")
 	cnfrmPswd := r.FormValue("ConfirmNewPassword")
 	gender := r.FormValue("gender")
-
+	age := r.FormValue("Age")
+	intAge, err := strconv.Atoi(age)
+	if err != nil {
+		http.Error(w, "Invalid age format", http.StatusBadRequest)
+		return
+	}
 	// ! STSRT: to check if the user already exists in the database.
 	// prep the stmt to get the user by their username.
 	stmt, err := db.Prepare(GetUserByUnameQuery)
@@ -178,8 +184,19 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		r.Form = nil
 		return
 	}
+	if intAge < 18 || intAge > 99 {
+		if intAge < 18 {
+			log.Printf("You must be at least 18 years old\n")
+			http.Error(w, "You must be at least 18 years old!", http.StatusOK)
+		}
+		if intAge > 99 {
+			log.Printf("Invalid age!\n")
+			http.Error(w, "You are too old to use this app grandpa", http.StatusOK)
+		}
+		return
+	}
 
-	_, err = stmt.Exec(username, firstNmae, lastName, email, hashedPassword, gender)
+	_, err = stmt.Exec(username, firstNmae, lastName, email, hashedPassword, intAge, gender)
 	if err != nil {
 		log.Printf("error executing statement: %v\n", err)
 		http.Error(w, "Internal Server Error", http.StatusOK)
