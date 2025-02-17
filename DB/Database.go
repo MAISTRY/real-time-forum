@@ -133,7 +133,7 @@ func InsertDefaultUsers(db *sql.DB) {
 
 	for _, user := range defaultUsers {
 		_, err := db.Exec(`INSERT INTO User (username, firstname, lastname, email, password, gender, age, privilege) 
-			SELECT ?, ?, ?, ?, ?, ?, ? 
+			SELECT ?, ?, ?, ?, ?, ?, ?,?
 			WHERE NOT EXISTS (SELECT 1 FROM User WHERE username = ?)`,
 			user.username, user.firstname, user.lastname, user.email, user.password, user.gender, user.age, user.privilege, user.username)
 		if err != nil {
